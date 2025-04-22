@@ -9,5 +9,4 @@ public class YappingApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(YappingApplication.class, args);
 	}
-
 }

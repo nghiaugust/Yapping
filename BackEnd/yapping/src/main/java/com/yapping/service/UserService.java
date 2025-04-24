@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Set;
 
 public interface UserService {
-    UserDTO createUser(UserDTO userDTO, Set<String> roleNames);
+    UserDTO createUser(UserDTO userDTO);
     UserDTO findUserWithRoles(Long userId);
     List<UserDTO> findAllUsers();
-    UserDTO updateUser(Long userId, UserDTO userDTO, Set<String> roleNames);
-    void deleteUser(Long userId);
-    void assignRoleToUser(Long userId, String roleName);
-    void removeRoleFromUser(Long userId, String roleName);
+    UserDTO updateUser(Long userId, UserDTO userDTO);
+    UserDTO deleteUser(Long userId);
+    String assignRoleToUser(Long userId, String roleName); // gán role tai khoan
+    String removeRoleFromUser(Long userId, String roleName);// gỡ role tài khoan
 }

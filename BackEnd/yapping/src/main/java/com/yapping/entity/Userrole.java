@@ -23,7 +23,7 @@ public class Userrole {
     private User user;
 
     @MapsId("roleId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;

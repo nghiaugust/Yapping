@@ -49,7 +49,7 @@ public class User {
     @Column(name = "profile_picture", length = 255)
     private String profilePicture;
 
-    // xác thực
+    // xác thực kiểu như tích xanh
     @ColumnDefault("0")
     @Column(name = "is_verified")
     private Boolean isVerified;

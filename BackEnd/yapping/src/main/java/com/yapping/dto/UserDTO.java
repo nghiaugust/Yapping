@@ -29,11 +29,11 @@ public class UserDTO {
     private String password; // Chỉ dùng khi tạo/cập nhật user
     @Size(max = 100)
     private String fullName;
-    private String bio;
+    private String bio; // giới thieu ban than
     @Size(max = 255)
     private String profilePicture;
-    private Boolean isVerified;
-    private User.Status status;
+    private Boolean isVerified; //tích xanh
+    private User.Status status; // trạng thái tài khoản
     private Instant createdAt;
     private Instant updatedAt;
     private Set<RoleDTO> roles;

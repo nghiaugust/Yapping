@@ -1,20 +1,22 @@
 package com.yapping.service.impl;
 
+import com.yapping.dto.RoleDTO;
 import com.yapping.dto.UserDTO;
 import com.yapping.entity.Role;
 import com.yapping.entity.User;
 import com.yapping.entity.Userrole;
 import com.yapping.entity.UserroleId;
-import com.yapping.mapper.UserMapper;
 import com.yapping.repository.RoleRepository;
 import com.yapping.repository.UserRepository;
 import com.yapping.repository.UserroleRepository;
 import com.yapping.service.UserService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,14 +34,11 @@ public class UserServiceImpl implements UserService {
     private UserroleRepository userroleRepository;
 
     @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
-    @Transactional
-    public UserDTO createUser(UserDTO userDTO, Set<String> roleNames) {
+    @Transactional // dam bao tinh nhat quan, nếu tất cả thành công được commit, nếu 1 thao tác thất bại rollback hủy bỏ tất cả thay đổi, ở đây có 2 thao tác là lưu và gán vai trò roll
+    public UserDTO createUser(UserDTO userDTO) {
         // Kiểm tra username và email duy nhất
         userRepository.findByUsername(userDTO.getUsername())
                 .ifPresent(u -> { throw new RuntimeException("Username already exists"); });
@@ -47,44 +46,57 @@ public class UserServiceImpl implements UserService {
                 .ifPresent(u -> { throw new RuntimeException("Email already exists"); });
 
         // Chuyển DTO thành entity
-        User user = userMapper.toEntity(userDTO);
+        User user = new User();
+        BeanUtils.copyProperties(userDTO, user, "id", "password", "roles", "createdAt", "updatedAt", "isVerified", "status");
+        //dang sau la danh sach cac thuoc tinh se bo qua khi tao o đay userDTO la nguon, user la dich
         if (userDTO.getPassword() != null) {
             user.setPasswordHash(passwordEncoder.encode(userDTO.getPassword()));
-        }
-        user.setIsVerified(false);
-        user.setStatus(User.Status.PENDING_VERIFICATION);
+        }user.setPasswordHash(passwordEncoder.encode(userDTO.getPassword()));
+        user.setIsVerified(false);// mac dinh chua co tich xanh
+        user.setStatus(User.Status.PENDING_VERIFICATION);// chờ xác nhận từ mail
 
         // Lưu user
         user = userRepository.save(user);
 
-        // Gán vai trò
-        if (roleNames != null && !roleNames.isEmpty()) {
-            for (String roleName : roleNames) {
-                assignRoleToUser(user.getId(), roleName);
+        // Gán vai trò từ UserDTO
+        Set<RoleDTO> roles = userDTO.getRoles();
+        if (roles != null && !roles.isEmpty()) {
+            for (RoleDTO roleDTO : roles) {
+                assignRoleToUser(user.getId(), roleDTO.getName());
             }
         }
 
-        // Trả về DTO
-        return userMapper.toDTO(userRepository.findById(user.getId()).orElseThrow());
+        // Chuyển entity thành DTO
+        return convertToDTO(user);
     }
 
     @Override
     public UserDTO findUserWithRoles(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return userMapper.toDTO(user);
+        return convertToDTO(user);
     }
 
     @Override
     public List<UserDTO> findAllUsers() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toDTO)
+        List<User> users = userRepository.findAll();
+        if (users.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return users.stream()
+                .map(user -> {
+                    try {
+                        return convertToDTO(user);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to convert user with ID " + user.getId() + " to UserDTO. Cause: " + e.getMessage(), e);
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public UserDTO updateUser(Long userId, UserDTO userDTO, Set<String> roleNames) {
+    public UserDTO updateUser(Long userId, UserDTO userDTO) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -99,48 +111,46 @@ public class UserServiceImpl implements UserService {
         }
 
         // Cập nhật thông tin user
-        user.setUsername(userDTO.getUsername());
-        user.setEmail(userDTO.getEmail());
+        BeanUtils.copyProperties(userDTO, user, "id", "password", "roles", "createdAt", "updatedAt");
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
             user.setPasswordHash(passwordEncoder.encode(userDTO.getPassword()));
         }
-        user.setFullName(userDTO.getFullName());
-        user.setBio(userDTO.getBio());
-        user.setProfilePicture(userDTO.getProfilePicture());
         user.setIsVerified(userDTO.getIsVerified() != null ? userDTO.getIsVerified() : user.getIsVerified());
         user.setStatus(userDTO.getStatus() != null ? userDTO.getStatus() : user.getStatus());
 
-        // Cập nhật vai trò (xóa cũ, thêm mới)
-        if (roleNames != null) {
+        // Cập nhật vai trò từ UserDTO
+        Set<RoleDTO> roles = userDTO.getRoles();
+        if (roles != null) {
             userroleRepository.deleteAll(userroleRepository.findByUserId(userId));
-            for (String roleName : roleNames) {
-                assignRoleToUser(userId, roleName);
+            for (RoleDTO roleDTO : roles) {
+                assignRoleToUser(userId, roleDTO.getName());
             }
         }
 
         // Lưu user
         user = userRepository.save(user);
-        return userMapper.toDTO(user);
+        return convertToDTO(user);
     }
 
     @Override
     @Transactional
-    public void deleteUser(Long userId) {
+    public UserDTO deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        // Xóa các Userrole liên quan (do cascade trong entity)
+        // Xóa tất cả Userrole liên quan
+        userroleRepository.deleteByUserId(userId);
         userRepository.delete(user);
+        return convertToDTO(user);
     }
 
     @Override
     @Transactional
-    public void assignRoleToUser(Long userId, String roleName) {
+    public String assignRoleToUser(Long userId, String roleName) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Role role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
-        // Kiểm tra xem vai trò đã được gán chưa
         UserroleId userroleId = new UserroleId(userId, role.getId());
         if (!userroleRepository.existsById(userroleId)) {
             Userrole userrole = new Userrole();
@@ -148,18 +158,64 @@ public class UserServiceImpl implements UserService {
             userrole.setRole(role);
             userrole.setId(userroleId);
             userroleRepository.save(userrole);
+            return "Đã gán vai trò " + roleName + " cho người dùng có ID " + userId + " thành công";
         }
+        else
+            throw new RuntimeException("Role " + roleName + " is already assigned to user with ID " + userId);
     }
 
     @Override
     @Transactional
-    public void removeRoleFromUser(Long userId, String roleName) {
+    public String removeRoleFromUser(Long userId, String roleName) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Role role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
         UserroleId userroleId = new UserroleId(userId, role.getId());
-        userroleRepository.deleteById(userroleId);
+        if (!userroleRepository.existsById(userroleId)){
+            throw new RuntimeException("Role " + roleName + " khong ton tai voi user co ID " + userId);
+        }else {
+            userroleRepository.deleteById(userroleId);
+            return "Đã xoá vai trò " + roleName + " cho người dùng có ID " + userId + " thành công";
+        }
+    }
+
+    private UserDTO convertToDTO(User user) {
+        if (user == null) {
+            throw new RuntimeException("User is null");
+        }
+
+        // Tạo UserDTO và ánh xạ thủ công các thuộc tính từ User
+        UserDTO userDTO = new UserDTO();
+        BeanUtils.copyProperties(user, userDTO, "passwordHash");
+
+        // Lấy danh sách Userrole từ repository
+        List<Userrole> userroles = userroleRepository.findByUserId(user.getId());
+        if (userroles == null) {
+            throw new RuntimeException("Userroles not found for user ID " + user.getId());
+        }
+
+        // Chuyển đổi danh sách Userrole thành Set<RoleDTO>
+        Set<RoleDTO> roleDTOs = userroles.stream()
+                .map(userrole -> {
+                    Role role = userrole.getRole();
+                    if (role == null) {
+                        throw new RuntimeException("Role is null for userrole with user ID " + user.getId());
+                    }
+                    if (role.getName() == null) {
+                        throw new RuntimeException("Role name is null for role ID " + role.getId());
+                    }
+                    // Ánh xạ thủ công từ Role sang RoleDTO
+                    RoleDTO roleDTO = new RoleDTO();
+                    roleDTO.setId(role.getId());
+                    roleDTO.setName(role.getName());
+                    return roleDTO;
+                })
+                .collect(Collectors.toSet());
+
+        // Gán danh sách RoleDTO vào UserDTO
+        userDTO.setRoles(roleDTOs);
+        return userDTO;
     }
 }

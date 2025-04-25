@@ -16,6 +16,11 @@ import java.time.Instant;
 @Entity
 @Table(name = "media")
 public class Media {
+
+    public enum MediaType{
+        IMAGE, VIDEO, GIF
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "media_id", nullable = false)
@@ -34,9 +39,9 @@ public class Media {
     @Column(name = "media_url", nullable = false)
     private String mediaUrl;
 
-    @Lob
-    @Column(name = "media_type", nullable = false)
-    private String mediaType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "media_type", nullable = false, length=30)
+    private MediaType mediaType;
 
     @ColumnDefault("0")
     @Column(name = "sort_order")

@@ -27,7 +27,7 @@ public class Like {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "target_type", nullable = false, length = 50)
+    @Column(name = "target_type", nullable = false, length = 30)
     @ColumnDefault("'POST'")
     private TargetType targetType;
 

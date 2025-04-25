@@ -31,13 +31,13 @@ public class Notification {
     @JoinColumn(name = "actor_id")
     private User actor;
 
-    @Lob
-    @Column(name = "type", nullable = false)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length=30)
+    private Type type;
 
-    @Lob
-    @Column(name = "target_type")
-    private String targetType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "target_type", nullable = false, length = 30)
+    private TargetType targetType;
 
     @Column(name = "target_id")
     private Long targetId;
@@ -55,4 +55,10 @@ public class Notification {
     @Column(name = "created_at")
     private Instant createdAt;
 
+    public enum Type {
+        LIKE_POST, LIKE_COMMENT, COMMENT, REPLY_POST, REPLY_COMMENT, FOLLOW, MENTION_POST, MENTION_COMMENT, REPOST, SYSTEM
+    }
+    public enum TargetType {
+        POST, COMMENT,USER
+    }
 }

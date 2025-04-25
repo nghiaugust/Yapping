@@ -1,15 +1,21 @@
 package com.yapping.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.*;
 
 import java.time.Instant;
 
+@NamedEntityGraph(
+        name = "Post.withUserAndParentPost",
+        attributeNodes = {
+                @NamedAttributeNode("user"), // cho phép user  tải cùng entity chính là post
+                @NamedAttributeNode("parentPost")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,7 +24,7 @@ import java.time.Instant;
 public class Post {
 
     public enum Visibility {
-        PUBLIC, PRIVATE, FRIENDS
+        PUBLIC, FOLLOWERS_ONLY, PRIVATE
     }
 
     @Id
@@ -59,13 +65,13 @@ public class Post {
 
     @ColumnDefault("0")
     @Column(name = "quote_count")
-    private Integer quoteCount;
+    private Integer quoteCount;// trích dẫn
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
+    @CreationTimestamp
     @Column(name = "created_at")
     private Instant createdAt;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private Instant updatedAt;
 

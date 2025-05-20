@@ -1,7 +1,7 @@
 package com.yapping.service.impl;
 
-import com.yapping.dto.PatchPostDTO;
-import com.yapping.dto.PostDTO;
+import com.yapping.dto.post.PatchPostDTO;
+import com.yapping.dto.post.PostDTO;
 import com.yapping.entity.Post;
 import com.yapping.entity.User;
 import com.yapping.repository.PostRepository;

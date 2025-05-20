@@ -1,15 +1,16 @@
 package com.yapping.service;
 
-import com.yapping.dto.UserDTO;
+import com.yapping.dto.user.PatchUserDTO;
+import com.yapping.dto.user.UserDTO;
 
 import java.util.List;
-import java.util.Set;
 
 public interface UserService {
     UserDTO createUser(UserDTO userDTO);
-    UserDTO findUserWithRoles(Long userId);
+    UserDTO findOneUser(Long userId);
     List<UserDTO> findAllUsers();
     UserDTO updateUser(Long userId, UserDTO userDTO);
+    UserDTO patchUser(Long userId, PatchUserDTO patchUserDTO);
     UserDTO deleteUser(Long userId);
     String assignRoleToUser(Long userId, String roleName); // gán role tai khoan
     String removeRoleFromUser(Long userId, String roleName);// gỡ role tài khoan

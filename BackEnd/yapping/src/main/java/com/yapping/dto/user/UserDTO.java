@@ -1,4 +1,4 @@
-package com.yapping.dto;
+package com.yapping.dto.user;
 
 import com.yapping.entity.User;
 import lombok.Getter;

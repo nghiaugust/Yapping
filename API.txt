@@ -1,0 +1,29 @@
+POST /auth/login  
+http://localhost:8080/yapping/api/auth/login
+{
+    "username":"nghia3",
+    "password":"12345678"
+}
+{
+    "access_token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZ2hpYTMiLCJpYXQiOjE3NDc2NDIwOTQsImV4cCI6MTc0NzY0Mjk5NH0.Q9QxElZLK3ClbEDzW41mo4HHK30Kfa6zcLerDw5unlQ",
+    "refresh_token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZ2hpYTMiLCJpYXQiOjE3NDc2NDIwOTQsImV4cCI6MTc0ODI0Njg5NH0.KyTn7QLef5WPYnKiYH86EE4-6QcdOIYo4KB1uYhm3H4",
+    "user_id": 8,
+    "roles": [
+        "USER"
+    ]
+}
+
+POST /users/register
+http://localhost:8080/yapping/api/users/register
+{
+    "username": "nghia4",
+    "email": "nghia4@gmail.com",
+    "password": "12345678",
+    "fullName": "Nghia",
+    "roles": [
+        {"name": "USER"}
+    ]
+}
+
+GET /users/me //Authorization
+http://localhost:8080/yapping/api/users/me

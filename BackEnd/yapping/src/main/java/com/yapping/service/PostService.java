@@ -1,8 +1,7 @@
 package com.yapping.service;
 
-import com.yapping.dto.PatchPostDTO;
-import com.yapping.dto.PostDTO;
-import com.yapping.entity.Post;
+import com.yapping.dto.post.PatchPostDTO;
+import com.yapping.dto.post.PostDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

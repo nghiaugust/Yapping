@@ -75,4 +75,10 @@ public class Post {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    public enum Type {
+        TEXT, RESOURCE
+    }
+    @Column(name = "post_type")
+    private Type post_type;
+
 }

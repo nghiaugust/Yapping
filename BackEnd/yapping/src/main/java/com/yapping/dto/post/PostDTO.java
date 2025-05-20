@@ -1,6 +1,5 @@
-package com.yapping.dto;
+package com.yapping.dto.post;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.yapping.entity.Post;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -42,6 +41,9 @@ public class PostDTO {
     private Instant createdAt;
 
     private Instant updatedAt;
+
+    @NotNull
+    private Post.Type post_type;
 
     // DTO lồng nhau để lưu thông tin người dùng
     @Getter

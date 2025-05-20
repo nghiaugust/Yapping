@@ -1,7 +1,8 @@
 package com.yapping.service.impl;
 
-import com.yapping.dto.RoleDTO;
-import com.yapping.dto.UserDTO;
+import com.yapping.dto.user.PatchUserDTO;
+import com.yapping.dto.user.RoleDTO;
+import com.yapping.dto.user.UserDTO;
 import com.yapping.entity.Role;
 import com.yapping.entity.User;
 import com.yapping.entity.Userrole;
@@ -71,7 +72,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO findUserWithRoles(Long userId) {
+    public UserDTO findOneUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return convertToDTO(user);
@@ -123,6 +124,62 @@ public class UserServiceImpl implements UserService {
         if (roles != null) {
             userroleRepository.deleteAll(userroleRepository.findByUserId(userId));
             for (RoleDTO roleDTO : roles) {
+                assignRoleToUser(userId, roleDTO.getName());
+            }
+        }
+
+        // Lưu user
+        user = userRepository.save(user);
+        return convertToDTO(user);
+    }
+
+    @Override
+    @Transactional
+    public UserDTO patchUser(Long userId, PatchUserDTO patchUserDTO) {
+        // Tìm user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Kiểm tra username nếu được cung cấp
+        if (patchUserDTO.getUsername() != null && !user.getUsername().equals(patchUserDTO.getUsername())) {
+            userRepository.findByUsername(patchUserDTO.getUsername())
+                    .ifPresent(u -> { throw new RuntimeException("Username already exists"); });
+            user.setUsername(patchUserDTO.getUsername());
+        }
+
+        // Kiểm tra email nếu được cung cấp
+        if (patchUserDTO.getEmail() != null && !user.getEmail().equals(patchUserDTO.getEmail())) {
+            userRepository.findByEmail(patchUserDTO.getEmail())
+                    .ifPresent(u -> { throw new RuntimeException("Email already exists"); });
+            user.setEmail(patchUserDTO.getEmail());
+        }
+
+        // Cập nhật password nếu được cung cấp
+        if (patchUserDTO.getPassword() != null && !patchUserDTO.getPassword().isEmpty()) {
+            user.setPasswordHash(passwordEncoder.encode(patchUserDTO.getPassword()));
+        }
+
+        // Cập nhật các thuộc tính khác nếu được cung cấp
+        if (patchUserDTO.getFullName() != null) {
+            user.setFullName(patchUserDTO.getFullName());
+        }
+        if (patchUserDTO.getBio() != null) {
+            user.setBio(patchUserDTO.getBio());
+        }
+        if (patchUserDTO.getProfilePicture() != null) {
+            user.setProfilePicture(patchUserDTO.getProfilePicture());
+        }
+        if (patchUserDTO.getIsVerified() != null) {
+            user.setIsVerified(patchUserDTO.getIsVerified());
+        }
+        if (patchUserDTO.getStatus() != null) {
+            user.setStatus(patchUserDTO.getStatus());
+        }
+
+        // Cập nhật vai trò nếu được cung cấp
+        if (patchUserDTO.getRoles() != null) {
+            userroleRepository.deleteAll(userroleRepository.findByUserId(userId));
+            for (RoleDTO roleDTO : patchUserDTO.getRoles()) {
                 assignRoleToUser(userId, roleDTO.getName());
             }
         }

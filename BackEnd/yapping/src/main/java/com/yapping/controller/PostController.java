@@ -1,8 +1,8 @@
 package com.yapping.controller;
 
 import com.yapping.dto.ApiResponse;
-import com.yapping.dto.PatchPostDTO;
-import com.yapping.dto.PostDTO;
+import com.yapping.dto.post.PatchPostDTO;
+import com.yapping.dto.post.PostDTO;
 import com.yapping.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -5,6 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,6 +28,60 @@ public class GlobalExceptionHandler {
 
     public GlobalExceptionHandler(Environment environment) {
         this.environment = environment;
+    }
+
+    // Xử lý lỗi 403 (Forbidden)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleAccessDeniedException(AccessDeniedException e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.FORBIDDEN,
+                e.getMessage() != null ? e.getMessage() : "Bạn không có quyền truy cập tài nguyên này"
+        );
+        problemDetail.setTitle("Quyền truy cập bị từ chối");
+        problemDetail.setType(URI.create("https://example.com/errors/forbidden"));
+        problemDetail.setProperty("errorCode", "ACCESS_DENIED");
+
+        if (isDevEnvironment()) {
+            problemDetail.setProperty("stackTrace", getLimitedStackTrace(e));
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problemDetail);
+    }
+
+    // Xử lý lỗi 401 (Unauthorized)
+    @ExceptionHandler({AuthenticationException.class, UsernameNotFoundException.class})
+    public ResponseEntity<ProblemDetail> handleAuthenticationException(Exception e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                e.getMessage() != null ? e.getMessage() : "Thông tin xác thực không hợp lệ"
+        );
+        problemDetail.setTitle("Xác thực thất bại");
+        problemDetail.setType(URI.create("https://example.com/errors/unauthorized"));
+        problemDetail.setProperty("errorCode", "UNAUTHORIZED");
+
+        if (isDevEnvironment()) {
+            problemDetail.setProperty("stackTrace", getLimitedStackTrace(e));
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
+    }
+
+    // Xử lý lỗi cấu hình
+    @ExceptionHandler({BeanCreationException.class, ApplicationContextException.class})
+    public ResponseEntity<ProblemDetail> handleConfigurationException(Exception e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                e.getMessage() != null ? e.getMessage() : "Lỗi cấu hình hệ thống"
+        );
+        problemDetail.setTitle("Lỗi cấu hình");
+        problemDetail.setType(URI.create("https://example.com/errors/configuration-error"));
+        problemDetail.setProperty("errorCode", "CONFIGURATION_ERROR");
+
+        if (isDevEnvironment()) {
+            problemDetail.setProperty("stackTrace", getLimitedStackTrace(e));
+        }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
     }
 
     @ExceptionHandler(RuntimeException.class)

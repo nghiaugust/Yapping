@@ -2,11 +2,16 @@ package com.yapping.service.impl;
 
 import com.yapping.dto.post.PatchPostDTO;
 import com.yapping.dto.post.PostDTO;
+import com.yapping.entity.FollowId;
+import com.yapping.entity.Media;
 import com.yapping.entity.Post;
 import com.yapping.entity.User;
 import com.yapping.repository.PostRepository;
 import com.yapping.repository.UserRepository;
+import com.yapping.repository.MediaRepository;
+import com.yapping.repository.FollowRepository;
 import com.yapping.service.PostService;
+import com.yapping.service.FileStorageService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
+
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,6 +34,13 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private MediaRepository mediaRepository;
+    
+    @Autowired
+    private FileStorageService fileStorageService;
+    @Autowired private FollowRepository followRepository;
 
     private PostDTO toPostDTO(Post post) {
         PostDTO postDTO = new PostDTO();
@@ -69,8 +84,32 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<PostDTO> getPostById(Long id) {
-        return postRepository.findById(id).map(this::toPostDTO);
+    public Optional<PostDTO> getPostById(Long id, Long userId) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with id: " + id));
+        
+        // Nếu người xem không phải là người tạo bài đăng
+        if (!post.getUser().getId().equals(userId)) {
+            // Kiểm tra visibility
+            if (post.getVisibility() == Post.Visibility.PRIVATE) {
+                // Nếu là PRIVATE, không cho phép truy cập
+                throw new SecurityException("Người dùng không có quyền xem bài đăng riêng tư này");
+            } 
+            else if (post.getVisibility() == Post.Visibility.FOLLOWERS_ONLY) {
+                // Nếu là FOLLOWERS_ONLY, kiểm tra xem người dùng có follow người tạo bài đăng không
+                FollowId followId = new FollowId();
+                followId.setFollowerId(userId);
+                followId.setFollowedId(post.getUser().getId());
+                
+                // Sử dụng FollowRepository để kiểm tra
+                if (!followRepository.existsById(followId)) {
+                    throw new SecurityException("Người dùng phải follow người tạo bài đăng để xem nội dung này");
+                }
+            }
+            // Nếu là PUBLIC thì cho phép xem mà không cần kiểm tra thêm
+        }
+        
+        return Optional.of(toPostDTO(post));
     }
 
     @Override
@@ -108,8 +147,8 @@ public class PostServiceImpl implements PostService {
 
         // Chuyển entity thành DTO
         return toPostDTO(updatedPost);
-    }
-
+    }    
+    
     @Override
     public PostDTO deletePost(Long id, Long userId) {
         // Tìm post
@@ -120,10 +159,27 @@ public class PostServiceImpl implements PostService {
         if (!post.getUser().getId().equals(userId)) {
             throw new SecurityException("User not authorized to delete this post");
         }
-
-        // Xóa post
+        
+        // Lưu trữ thông tin post để trả về
+        PostDTO postDTO = toPostDTO(post);
+        
+        // Xóa tất cả media files liên quan đến post
+        List<Media> mediaList = mediaRepository.findByPostId(id);
+        for (Media media : mediaList) {
+            try {
+                // Xóa file thực tế từ hệ thống lưu trữ
+                if (media.getMediaUrl() != null && !media.getMediaUrl().isEmpty()) {
+                    fileStorageService.deleteFile(media.getMediaUrl());
+                }
+            } catch (IOException e) {
+                // Log lỗi nhưng không dừng quá trình xóa
+                System.err.println("Không thể xóa media file: " + media.getMediaUrl() + " - Lỗi: " + e.getMessage());
+            }
+        }
+        
+        // Xóa post (Hibernate sẽ tự động xóa các media liên quan trong database do @OnDelete(action = OnDeleteAction.CASCADE))
         postRepository.delete(post);
-        return toPostDTO(post);
+        return postDTO;
     }
 
     @Override

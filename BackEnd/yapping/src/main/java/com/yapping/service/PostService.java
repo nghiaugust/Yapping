@@ -11,7 +11,7 @@ public interface PostService {
 
     PostDTO createPost(PostDTO postDTO, Long userId);
 
-    Optional<PostDTO> getPostById(Long id);
+    Optional<PostDTO> getPostById(Long id, Long userId);
 
     Page<PostDTO> getPublicPosts(Pageable pageable);
 

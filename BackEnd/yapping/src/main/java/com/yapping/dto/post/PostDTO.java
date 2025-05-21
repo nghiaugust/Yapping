@@ -1,5 +1,6 @@
 package com.yapping.dto.post;
 
+import com.yapping.dto.media.MediaDTO;
 import com.yapping.entity.Post;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,10 +42,11 @@ public class PostDTO {
 
     private Instant createdAt;
 
-    private Instant updatedAt;
-
-    @NotNull
+    private Instant updatedAt;    @NotNull
     private Post.Type post_type;
+    
+    // Danh sách media đính kèm
+    private List<MediaDTO> media;
 
     // DTO lồng nhau để lưu thông tin người dùng
     @Getter

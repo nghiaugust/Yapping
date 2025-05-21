@@ -27,3 +27,255 @@ http://localhost:8080/yapping/api/users/register
 
 GET /users/me //Authorization
 http://localhost:8080/yapping/api/users/me
+
+
+==============================================================
+Bài viết
+POST: tạo bài viết kèm ảnh hoặc video
+http://localhost:8080/yapping/api/posts-with-media
+
+form-data
+content
+visibility : PUBLIC, FOLLOWERS_ONLY, PRIVATE
+post_type : TEXT, RESOURCE
+files : danh sách file
+json trả về
+{
+    "status": 201,
+    "success": true,
+    "message": "Đã tạo bài đăng với media thành công",
+    "data": {
+        "id": 8,
+        "user": {
+            "id": 8,
+            "username": "nghia3",
+            "fullName": "Nghia",
+            "profilePicture": "/uploads/profile-pictures/1747724495181_sach-khoa-hoc.png"
+        },
+        "parentPostId": null,
+        "content": "nội dung bài đăng ",
+        "visibility": "PUBLIC",
+        "likeCount": null,
+        "commentCount": null,
+        "repostCount": null,
+        "quoteCount": null,
+        "createdAt": "2025-05-21T08:41:16.267126Z",
+        "updatedAt": "2025-05-21T08:41:16.267126Z",
+        "post_type": null,
+        "media": [
+            {
+                "id": 3,
+                "postId": 8,
+                "userId": 8,
+                "mediaUrl": "/uploads/media/8_1747816876271_bao-in.png",
+                "mediaType": "IMAGE",
+                "sortOrder": 0,
+                "createdAt": "2025-05-21T08:41:16.278094700Z"
+            },
+            {
+                "id": 4,
+                "postId": 8,
+                "userId": 8,
+                "mediaUrl": "/uploads/media/8_1747816876278_sach-ky-thuat.png",
+                "mediaType": "IMAGE",
+                "sortOrder": 1,
+                "createdAt": "2025-05-21T08:41:16.279092600Z"
+            }
+        ]
+    }
+}
+---------------------------------------------
+POST tạo bài viết đơn
+http://localhost:8080/yapping/api/posts
+{
+  "content": "Updated content for my  post6!",
+  "visibility": "PUBLIC",
+  "parentPostId": null,
+  "post_type":"RESOURCE"
+}
+json tra về
+{
+    "status": 201,
+    "success": true,
+    "message": "Đã tạo bài đăng thành công",
+    "data": {
+        "id": 11,
+        "user": {
+            "id": 1,
+            "username": "john_doe",
+            "fullName": "John Doe",
+            "profilePicture": null
+        },
+        "parentPostId": null,
+        "content": "Updated content for my  post6!",
+        "visibility": "PUBLIC",
+        "likeCount": null,
+        "commentCount": null,
+        "repostCount": null,
+        "quoteCount": null,
+        "createdAt": "2025-05-21T09:24:59.779722Z",
+        "updatedAt": "2025-05-21T09:24:59.779722Z",
+        "post_type": "RESOURCE",
+        "media": null
+    }
+}
+----------------------------------------------
+GET: lấy bài post công khai
+http://localhost:8080/yapping/api/posts?page=0&size=5
+json trả về
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã lấy danh sách bài đăng công khai thành công",
+    "data": {
+        "content": [
+            {
+                "id": 8,
+                "user": {
+                    "id": 8,
+                    "username": "nghia3",
+                    "fullName": "Nghia",
+                    "profilePicture": "/uploads/profile-pictures/1747724495181_sach-khoa-hoc.png"
+                },
+                "parentPostId": null,
+                "content": "nội dung bài đăng ",
+                "visibility": "PUBLIC",
+                "likeCount": null,
+                "commentCount": null,
+                "repostCount": null,
+                "quoteCount": null,
+                "createdAt": "2025-05-21T08:41:16Z",
+                "updatedAt": "2025-05-21T08:41:16Z",
+                "post_type": null,
+                "media": null
+            },
+            {
+                "id": 6,
+                "user": {
+                    "id": 1,
+                    "username": "john_doe",
+                    "fullName": "John Doe",
+                    "profilePicture": null
+                },
+                "parentPostId": null,
+                "content": "Updated content for my  post6!",
+                "visibility": "PUBLIC",
+                "likeCount": null,
+                "commentCount": null,
+                "repostCount": null,
+                "quoteCount": null,
+                "createdAt": "2025-04-25T05:29:55Z",
+                "updatedAt": "2025-04-25T05:29:55Z",
+                "post_type": "RESOURCE",
+                "media": null
+            },
+            {
+                "id": 5,
+                "user": {
+                    "id": 1,
+                    "username": "john_doe",
+                    "fullName": "John Doe",
+                    "profilePicture": null
+                },
+                "parentPostId": null,
+                "content": "Updated content for my  post5!",
+                "visibility": "PUBLIC",
+                "likeCount": null,
+                "commentCount": null,
+                "repostCount": null,
+                "quoteCount": null,
+                "createdAt": "2025-04-25T05:29:50Z",
+                "updatedAt": "2025-04-25T05:29:50Z",
+                "post_type": "RESOURCE",
+                "media": null
+            },
+            {
+                "id": 4,
+                "user": {
+                    "id": 1,
+                    "username": "john_doe",
+                    "fullName": "John Doe",
+                    "profilePicture": null
+                },
+                "parentPostId": null,
+                "content": "Updated content for my  post4!",
+                "visibility": "PUBLIC",
+                "likeCount": null,
+                "commentCount": null,
+                "repostCount": null,
+                "quoteCount": null,
+                "createdAt": "2025-04-25T05:29:46Z",
+                "updatedAt": "2025-04-25T05:29:46Z",
+                "post_type": "RESOURCE",
+                "media": null
+            },
+            {
+                "id": 3,
+                "user": {
+                    "id": 1,
+                    "username": "john_doe",
+                    "fullName": "John Doe",
+                    "profilePicture": null
+                },
+                "parentPostId": null,
+                "content": "Updated content for my  post3!",
+                "visibility": "PUBLIC",
+                "likeCount": null,
+                "commentCount": null,
+                "repostCount": null,
+                "quoteCount": null,
+                "createdAt": "2025-04-25T05:29:43Z",
+                "updatedAt": "2025-04-25T05:29:43Z",
+                "post_type": "RESOURCE",
+                "media": null
+            }
+        ],
+        "pageable": {
+            "pageNumber": 0,
+            "pageSize": 5,
+            "sort": {
+                "empty": false,
+                "sorted": true,
+                "unsorted": false
+            },
+            "offset": 0,
+            "paged": true,
+            "unpaged": false
+        },
+        "last": false,
+        "totalElements": 7,
+        "totalPages": 2,
+        "size": 5,
+        "number": 0,
+        "sort": {
+            "empty": false,
+            "sorted": true,
+            "unsorted": false
+        },
+        "first": true,
+        "numberOfElements": 5,
+        "empty": false
+    }
+}
+----------------------------------------------
+GET: lấy bài post đơn lẻ
+http://localhost:8080/yapping/api/posts/1
+=========================================
+media
+GET
+http://localhost:8080/yapping/api/media/3
+json trả về
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã lấy thông tin media thành công",
+    "data": {
+        "id": 3,
+        "postId": 8,
+        "userId": 8,
+        "mediaUrl": "/uploads/media/8_1747816876271_bao-in.png",
+        "mediaType": "IMAGE",
+        "sortOrder": 0,
+        "createdAt": "2025-05-21T08:41:16Z"
+    }
+}

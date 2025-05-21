@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-public interface PostRepository extends JpaRepository<Post, Integer> {
+public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
     List<Post> findByUserId(@Param("userId") Long userId);
     // Lấy danh sách bài đăng, sắp xếp theo createdAt giảm dần

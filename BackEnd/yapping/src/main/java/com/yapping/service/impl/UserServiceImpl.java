@@ -10,6 +10,7 @@ import com.yapping.entity.UserroleId;
 import com.yapping.repository.RoleRepository;
 import com.yapping.repository.UserRepository;
 import com.yapping.repository.UserroleRepository;
+import com.yapping.service.FileStorageService;
 import com.yapping.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +38,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @Override
     @Transactional // dam bao tinh nhat quan, nếu tất cả thành công được commit, nếu 1 thao tác thất bại rollback hủy bỏ tất cả thay đổi, ở đây có 2 thao tác là lưu và gán vai trò roll
@@ -189,6 +193,53 @@ public class UserServiceImpl implements UserService {
         return convertToDTO(user);
     }
 
+    @Override
+    @Transactional
+    public UserDTO patchForUser(Long userId, PatchUserDTO patchUserDTO) {
+        // Tìm user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        // Chỉ cập nhật các thuộc tính được phép
+        if (patchUserDTO.getFullName() != null) {
+            user.setFullName(patchUserDTO.getFullName());
+        }
+        if (patchUserDTO.getBio() != null) {
+            user.setBio(patchUserDTO.getBio());
+        }
+
+        // Lưu user
+        user = userRepository.save(user);
+        return convertToDTO(user);
+    }
+
+    @Override
+    @Transactional
+    public UserDTO patchProfilePicture(Long userId, PatchUserDTO patchUserDTO) {
+        // Tìm user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        if (patchUserDTO.getProfilePicture() != null) {
+            // Xóa ảnh cũ nếu có
+            try {
+                if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+                    fileStorageService.deleteFile(user.getProfilePicture());
+                }
+            } catch (IOException e) {
+                // Log lỗi nhưng không dừng quá trình
+                System.err.println("Không thể xóa ảnh cũ: " + e.getMessage());
+            }
+
+            // Cập nhật đường dẫn ảnh mới
+            user.setProfilePicture(patchUserDTO.getProfilePicture());
+        }
+
+        // Lưu user
+        user = userRepository.save(user);
+        return convertToDTO(user);
+    }
+    
     @Override
     @Transactional
     public UserDTO deleteUser(Long userId) {

@@ -57,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/media/**").authenticated()
                         .requestMatchers("/api/categories/**").authenticated()
                         .requestMatchers("/api/subcategories/**").authenticated()
+                        .requestMatchers("/api/resources/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

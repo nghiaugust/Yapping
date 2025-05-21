@@ -14,15 +14,15 @@ Trường `post_type` sẽ tự động được gán là `RESOURCE`.
 ## Request Body (JSON)
 ```json
 {
-    "content": "Bài đăng chia sẻ tài liệu về Java Programming", (bắt buộc)
-    "visibility": "PUBLIC", (mặc định: PUBLIC, các giá trị khác: FOLLOWERS_ONLY, PRIVATE)
-    "parentPostId": null, (không bắt buộc - ID của bài đăng gốc nếu là phản hồi cho bài đăng khác)
+    "content": "Bài đăng chia sẻ tài liệu về Java Programming", //(bắt buộc)
+    "visibility": "PUBLIC", //(mặc định: PUBLIC, các giá trị khác: FOLLOWERS_ONLY, PRIVATE)
+    "parentPostId": null, //(không bắt buộc - ID của bài đăng gốc nếu là phản hồi cho bài đăng khác)
     
-    "title": "Java Programming Guide", (bắt buộc)
-    "description": "Tài liệu hướng dẫn lập trình Java từ cơ bản đến nâng cao", (không bắt buộc)
-    "driveLink": "https://drive.google.com/file/abc123", (bắt buộc)
-    "categoryId": 1, (bắt buộc)
-    "subCategoryId": 2 (không bắt buộc)
+    "title": "Java Programming Guide", //(bắt buộc)
+    "description": "Tài liệu hướng dẫn lập trình Java từ cơ bản đến nâng cao", //(không bắt buộc)
+    "driveLink": "https://drive.google.com/file/abc123", //(bắt buộc)
+    "categoryId": 1, //(bắt buộc)
+    "subCategoryId": 2 //(không bắt buộc)
 }
 ```
 

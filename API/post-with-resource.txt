@@ -1,0 +1,113 @@
+# API Tạo Bài Đăng với Tài Liệu (PostWithResource)
+
+## Mô tả
+API này cho phép người dùng tạo bài đăng kèm theo tài liệu trong một yêu cầu duy nhất.
+Trường `post_type` sẽ tự động được gán là `RESOURCE`.
+
+## Endpoint
+**POST**: `/api/posts-with-resource`
+
+## Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+- `Content-Type: application/json`
+
+## Request Body (JSON)
+```json
+{
+    "content": "Bài đăng chia sẻ tài liệu về Java Programming", (bắt buộc)
+    "visibility": "PUBLIC", (mặc định: PUBLIC, các giá trị khác: FOLLOWERS_ONLY, PRIVATE)
+    "parentPostId": null, (không bắt buộc - ID của bài đăng gốc nếu là phản hồi cho bài đăng khác)
+    
+    "title": "Java Programming Guide", (bắt buộc)
+    "description": "Tài liệu hướng dẫn lập trình Java từ cơ bản đến nâng cao", (không bắt buộc)
+    "driveLink": "https://drive.google.com/file/abc123", (bắt buộc)
+    "categoryId": 1, (bắt buộc)
+    "subCategoryId": 2 (không bắt buộc)
+}
+```
+
+## Response
+### Success (Status: 201 Created)
+```json
+{
+    "status": 201,
+    "success": true,
+    "message": "Đã tạo bài đăng với tài liệu thành công",
+    "data": {
+        "id": 1,
+        "user": {
+            "id": 1,
+            "username": "user1",
+            "fullName": "User One",
+            "profilePicture": "/uploads/profile-pictures/user1.jpg"
+        },
+        "parentPostId": null,
+        "content": "Bài đăng chia sẻ tài liệu về Java Programming",
+        "visibility": "PUBLIC",
+        "likeCount": 0,
+        "commentCount": 0,
+        "repostCount": 0,
+        "quoteCount": 0,
+        "createdAt": "2025-05-22T12:34:56Z",
+        "updatedAt": "2025-05-22T12:34:56Z",
+        "post_type": "RESOURCE",
+        "media": null,
+        "resources": [
+            {
+                "id": 1,
+                "postId": 1,
+                "userId": 1,
+                "userName": "user1",
+                "title": "Java Programming Guide",
+                "description": "Tài liệu hướng dẫn lập trình Java từ cơ bản đến nâng cao",
+                "driveLink": "https://drive.google.com/file/abc123",
+                "categoryId": 1,
+                "categoryName": "Lập Trình",
+                "subCategoryId": 2,
+                "subCategoryName": "Java",
+                "viewCount": 0,
+                "downloadCount": 0,
+                "createdAt": "2025-05-22T12:34:56Z",
+                "updatedAt": "2025-05-22T12:34:56Z"
+            }
+        ]
+    }
+}
+```
+
+### Error (Status: 400 Bad Request)
+```json
+{
+    "status": 400,
+    "success": false,
+    "message": "Tiêu đề tài liệu không được để trống",
+    "data": null
+}
+```
+
+### Error (Status: 404 Not Found)
+```json
+{
+    "status": 404,
+    "success": false,
+    "message": "Không tìm thấy thể loại với ID: 999",
+    "data": null
+}
+```
+
+### Error (Status: 500 Internal Server Error)
+```json
+{
+    "status": 500,
+    "success": false,
+    "message": "Lỗi hệ thống: ...",
+    "data": null
+}
+```
+
+## Lưu ý
+- Người dùng phải đăng nhập để sử dụng API này (vai trò USER hoặc ADMIN)
+- Bài đăng và tài liệu sẽ được tạo cùng lúc
+- Trường `post_type` sẽ tự động được thiết lập là `RESOURCE`
+- Các mối quan hệ giữa bài đăng, người dùng, tài liệu, thể loại và thể loại phụ sẽ được thiết lập tự động
+- Khi cung cấp subCategoryId, hệ thống sẽ kiểm tra xem subCategory có thuộc category không

@@ -54,6 +54,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/posts/**").authenticated()
+                        .requestMatchers("/api/media/**").authenticated()
+                        .requestMatchers("/api/categories/**").authenticated()
+                        .requestMatchers("/api/subcategories/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

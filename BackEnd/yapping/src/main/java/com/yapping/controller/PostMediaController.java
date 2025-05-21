@@ -84,7 +84,6 @@ public class PostMediaController {
             PostWithMediaDTO postWithMediaDTO = new PostWithMediaDTO();
             postWithMediaDTO.setContent(content);
             postWithMediaDTO.setVisibility(Post.Visibility.valueOf(visibility));
-            postWithMediaDTO.setPost_type(Post.Type.valueOf(type));
             if (parentPostId != null && !parentPostId.isEmpty()) {
                 try {
                     postWithMediaDTO.setParentPostId(Long.parseLong(parentPostId));

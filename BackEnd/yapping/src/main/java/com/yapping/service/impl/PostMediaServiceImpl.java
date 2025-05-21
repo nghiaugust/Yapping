@@ -48,7 +48,14 @@ public class PostMediaServiceImpl implements PostMediaService {
         Post post = new Post();
         BeanUtils.copyProperties(postWithMediaDTO, post, "id", "user", "parentPostId", "createdAt", "updatedAt");
         post.setUser(user);
-
+        post.setPost_type(Post.Type.TEXT); // Đặt loại bài viết là TEXT
+        post.setCreatedAt(Instant.now());
+        post.setUpdatedAt(Instant.now());
+        post.setLikeCount(0);
+        post.setCommentCount(0);
+        post.setRepostCount(0);
+        post.setQuoteCount(0);
+        
         // Xử lý parentPost nếu có
         if (postWithMediaDTO.getParentPostId() != null) {
             Post parentPost = postRepository.findById(postWithMediaDTO.getParentPostId())

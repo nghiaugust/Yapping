@@ -1,6 +1,7 @@
 package com.yapping.dto.post;
 
 import com.yapping.dto.media.MediaDTO;
+import com.yapping.dto.resource.ResourceDTO;
 import com.yapping.entity.Post;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -45,8 +46,11 @@ public class PostDTO {
     private Instant updatedAt;    @NotNull
     private Post.Type post_type;
     
-    // Danh sách media đính kèm
+    // Danh sách media đính kèm    
     private List<MediaDTO> media;
+    
+    // Danh sách tài liệu đính kèm
+    private List<ResourceDTO> resources;
 
     // DTO lồng nhau để lưu thông tin người dùng
     @Getter

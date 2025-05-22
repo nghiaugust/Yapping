@@ -12,6 +12,8 @@ import com.yapping.repository.MediaRepository;
 import com.yapping.repository.FollowRepository;
 import com.yapping.service.PostService;
 import com.yapping.service.FileStorageService;
+import com.yapping.service.MentionService;
+import com.yapping.service.NotificationService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,10 +39,17 @@ public class PostServiceImpl implements PostService {
     
     @Autowired
     private MediaRepository mediaRepository;
+      @Autowired
+    private FileStorageService fileStorageService;
+    
+    @Autowired 
+    private FollowRepository followRepository;
     
     @Autowired
-    private FileStorageService fileStorageService;
-    @Autowired private FollowRepository followRepository;
+    private NotificationService notificationService;
+    
+    @Autowired
+    private MentionService mentionService;
 
     private PostDTO toPostDTO(Post post) {
         PostDTO postDTO = new PostDTO();
@@ -77,7 +86,36 @@ public class PostServiceImpl implements PostService {
 
         // Lưu post
         Post savedPost = postRepository.save(post);
-
+        
+        // Xử lý mentions trong nội dung bài đăng
+        if (postDTO.getContent() != null && !postDTO.getContent().isEmpty()) {
+            mentionService.createMentionsFromText(
+                    postDTO.getContent(), 
+                    userId, 
+                    savedPost.getId(), 
+                    null
+            );
+        }
+        
+        // Tạo thông báo cho người theo dõi nếu bài đăng là PUBLIC hoặc FOLLOWERS_ONLY
+        if (post.getVisibility() != Post.Visibility.PRIVATE) {
+            // Lấy danh sách người theo dõi
+            List<User> followers = userRepository.findFollowersByUserId(userId);
+            
+            // Tạo thông báo cho mỗi người theo dõi
+            for (User follower : followers) {
+                // Không tạo thông báo cho chính người đăng
+                if (!follower.getId().equals(userId)) {
+                    // Tạo thông báo về bài đăng mới
+                    notificationService.createPostNotification(
+                            follower.getId(),  // ID người nhận thông báo
+                            userId,            // ID người đăng bài
+                            savedPost.getId()  // ID bài đăng
+                    );
+                }
+            }
+        }
+        
         // Chuyển entity thành DTO
         return toPostDTO(savedPost);
     }
@@ -145,10 +183,20 @@ public class PostServiceImpl implements PostService {
         // Lưu post
         Post updatedPost = postRepository.save(post);
 
+        // Xử lý mentions trong nội dung bài đăng cập nhật
+        if (postDTO.getContent() != null && !postDTO.getContent().isEmpty()) {
+            mentionService.createMentionsFromText(
+                    postDTO.getContent(), 
+                    userId, 
+                    updatedPost.getId(), 
+                    null
+            );
+        }
+
         // Chuyển entity thành DTO
         return toPostDTO(updatedPost);
-    }    
-    
+    }
+
     @Override
     public PostDTO deletePost(Long id, Long userId) {
         // Tìm post
@@ -206,13 +254,48 @@ public class PostServiceImpl implements PostService {
             post.setParentPost(parentPost);
         } else if (patchPostDTO.getParentPostId() == null && post.getParentPost() != null) {
             post.setParentPost(null); // Cho phép xóa parentPost
-        }
-
+        }        
         // Lưu bài đăng
-        Post updatedPost = postRepository.save(post);
-
+        Post updatedPost = postRepository.save(post);        
+        
+        // Xử lý mentions nếu nội dung đã được cập nhật
+        if (patchPostDTO.getContent() != null && !patchPostDTO.getContent().isEmpty()) {
+            mentionService.createMentionsFromText(
+                    patchPostDTO.getContent(), 
+                    userId, 
+                    updatedPost.getId(), 
+                    null
+            );
+        }
+        
         // Chuyển thành DTO
         return toPostDTO(updatedPost);
     }
-
+    
+    @Override
+    @Transactional
+    public PostDTO likePost(Long postId, Long userId) {
+        // Tìm bài đăng
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bài đăng với ID: " + postId));
+        
+        // Tìm người dùng
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng với ID: " + userId));
+        
+        // Tăng số lượt thích của bài đăng
+        post.setLikeCount(post.getLikeCount() == null ? 1 : post.getLikeCount() + 1);
+        Post updatedPost = postRepository.save(post);
+        
+        // Tạo thông báo cho chủ bài đăng
+        if (!userId.equals(post.getUser().getId())) {
+            notificationService.createLikePostNotification(
+                    userId,
+                    postId,
+                    post.getUser().getId()
+            );
+        }
+        
+        return toPostDTO(updatedPost);
+    }
 }

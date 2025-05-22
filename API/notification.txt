@@ -1,0 +1,310 @@
+# YAPPING NOTIFICATION API
+
+## 1. Lấy tất cả thông báo của người dùng hiện tại
+- **URL**: `/api/notifications`
+- **Method**: `GET`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Params**:
+  - `page`: Số trang (mặc định: 0)
+  - `size`: Số lượng thông báo trên mỗi trang (mặc định: 20)
+  - `sortBy`: Trường sắp xếp (mặc định: createdAt)
+  - `direction`: Hướng sắp xếp (asc/desc, mặc định: desc)
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã lấy danh sách thông báo thành công",
+    "data": {
+        "content": [
+            {
+                "id": 1,
+                "userId": 2,
+                "username": "user123",
+                "userFullName": "Nguyễn Văn A",
+                "userProfilePicture": "url_to_profile_picture",
+                "actorId": 3,
+                "actorUsername": "user456",
+                "actorFullName": "Trần Thị B",
+                "actorProfilePicture": "url_to_profile_picture",
+                "type": "LIKE_POST",
+                "targetType": "POST",
+                "targetId": 5,
+                "targetOwnerId": 2,
+                "targetOwnerUsername": "user123",
+                "targetOwnerFullName": "Nguyễn Văn A",
+                "isRead": false,
+                "createdAt": "2025-05-22T10:30:00Z",
+                "message": "Trần Thị B đã thích bài viết của bạn",
+                "redirectUrl": "/post/5"
+            },
+            {
+                "id": 2,
+                "userId": 2,
+                "username": "user123",
+                "userFullName": "Nguyễn Văn A",
+                "userProfilePicture": "url_to_profile_picture",
+                "actorId": 4,
+                "actorUsername": "user789",
+                "actorFullName": "Lê Văn C",
+                "actorProfilePicture": "url_to_profile_picture",
+                "type": "FOLLOW",
+                "targetType": "USER",
+                "targetId": 4,
+                "targetOwnerId": null,
+                "targetOwnerUsername": null,
+                "targetOwnerFullName": null,
+                "isRead": true,
+                "createdAt": "2025-05-21T09:15:00Z",
+                "message": "Lê Văn C đã bắt đầu theo dõi bạn",
+                "redirectUrl": "/user/4"
+            }
+        ],
+        "pageable": {
+            "pageNumber": 0,
+            "pageSize": 20,
+            "sort": {
+                "orders": [
+                    {
+                        "direction": "DESC",
+                        "property": "createdAt"
+                    }
+                ]
+            }
+        },
+        "totalElements": 2,
+        "totalPages": 1,
+        "last": true,
+        "first": true,
+        "size": 20,
+        "number": 0,
+        "sort": {
+            "orders": [
+                {
+                    "direction": "DESC",
+                    "property": "createdAt"
+                }
+            ]
+        },
+        "numberOfElements": 2,
+        "empty": false
+    }
+}
+```
+
+## 2. Lấy tất cả thông báo chưa đọc của người dùng hiện tại
+- **URL**: `/api/notifications/unread`
+- **Method**: `GET`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Params**:
+  - `page`: Số trang (mặc định: 0)
+  - `size`: Số lượng thông báo trên mỗi trang (mặc định: 20)
+  - `sortBy`: Trường sắp xếp (mặc định: createdAt)
+  - `direction`: Hướng sắp xếp (asc/desc, mặc định: desc)
+- **Response**: Tương tự như API lấy tất cả thông báo, nhưng chỉ bao gồm các thông báo chưa đọc (isRead = false)
+
+## 3. Đánh dấu thông báo là đã đọc
+- **URL**: `/api/notifications/mark-read`
+- **Method**: `PUT`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Request Body**:
+```json
+{
+    "notificationIds": [1, 2, 3],  // Danh sách ID thông báo cần đánh dấu đã đọc (không bắt buộc nếu allNotifications = true)
+    "allNotifications": false       // Đánh dấu tất cả thông báo là đã đọc hay không (không bắt buộc nếu có notificationIds)
+}
+```
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã đánh dấu thông báo đã đọc thành công",
+    "data": null
+}
+```
+
+## 4. Đánh dấu tất cả thông báo là đã đọc
+- **URL**: `/api/notifications/mark-all-read`
+- **Method**: `PUT`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã đánh dấu 5 thông báo đã đọc thành công",
+    "data": 5
+}
+```
+
+## 5. Đếm số thông báo chưa đọc của người dùng hiện tại
+- **URL**: `/api/notifications/count-unread`
+- **Method**: `GET`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã đếm số thông báo chưa đọc thành công",
+    "data": 3
+}
+```
+
+## 6. Lấy thông báo theo ID
+- **URL**: `/api/notifications/{notificationId}`
+- **Method**: `GET`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã lấy thông báo thành công",
+    "data": {
+        "id": 1,
+        "userId": 2,
+        "username": "user123",
+        "userFullName": "Nguyễn Văn A",
+        "userProfilePicture": "url_to_profile_picture",
+        "actorId": 3,
+        "actorUsername": "user456",
+        "actorFullName": "Trần Thị B",
+        "actorProfilePicture": "url_to_profile_picture",
+        "type": "LIKE_POST",
+        "targetType": "POST",
+        "targetId": 5,
+        "targetOwnerId": 2,
+        "targetOwnerUsername": "user123",
+        "targetOwnerFullName": "Nguyễn Văn A",
+        "isRead": false,
+        "createdAt": "2025-05-22T10:30:00Z",
+        "message": "Trần Thị B đã thích bài viết của bạn",
+        "redirectUrl": "/post/5"
+    }
+}
+```
+
+## 7. Xóa thông báo
+- **URL**: `/api/notifications/{notificationId}`
+- **Method**: `DELETE`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã xóa thông báo thành công",
+    "data": null
+}
+```
+
+## 8. Tìm kiếm thông báo
+- **URL**: `/api/notifications/search`
+- **Method**: `GET`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Params**:
+  - `type`: Loại thông báo (LIKE_POST, LIKE_COMMENT, COMMENT, REPLY_POST, REPLY_COMMENT, FOLLOW, MENTION_POST, MENTION_COMMENT, REPOST, SYSTEM) (không bắt buộc)
+  - `targetType`: Loại đối tượng (POST, COMMENT, USER) (không bắt buộc)
+  - `targetId`: ID của đối tượng (không bắt buộc)
+  - `isRead`: Trạng thái đã đọc (true/false) (không bắt buộc)
+  - `page`: Số trang (mặc định: 0)
+  - `size`: Số lượng thông báo trên mỗi trang (mặc định: 20)
+  - `sortBy`: Trường sắp xếp (mặc định: createdAt)
+  - `direction`: Hướng sắp xếp (asc/desc, mặc định: desc)
+- **Response**: Tương tự như API lấy tất cả thông báo
+
+## 9. Tạo thông báo mới (chỉ dành cho Admin)
+- **URL**: `/api/notifications`
+- **Method**: `POST`
+- **Auth**: Yêu cầu đăng nhập (ROLE_ADMIN)
+- **Request Body**:
+```json
+{
+    "userId": 2,                // ID của người dùng nhận thông báo (bắt buộc)
+    "actorId": 1,               // ID của người dùng tạo hành động (không bắt buộc)
+    "type": "SYSTEM",           // Loại thông báo (bắt buộc)
+    "targetType": "USER",       // Loại đối tượng (bắt buộc)
+    "targetId": 2,              // ID của đối tượng (không bắt buộc)
+    "targetOwnerId": null,      // ID của chủ sở hữu đối tượng (không bắt buộc)
+    "message": "Thông báo hệ thống" // Nội dung thông báo (không bắt buộc)
+}
+```
+- **Response**:
+```json
+{
+    "status": 201,
+    "success": true,
+    "message": "Đã tạo thông báo thành công",
+    "data": {
+        "id": 1,
+        "userId": 2,
+        "username": "user123",
+        "userFullName": "Nguyễn Văn A",
+        "userProfilePicture": "url_to_profile_picture",
+        "actorId": 1,
+        "actorUsername": "admin",
+        "actorFullName": "Admin",
+        "actorProfilePicture": "url_to_profile_picture",
+        "type": "SYSTEM",
+        "targetType": "USER",
+        "targetId": 2,
+        "targetOwnerId": null,
+        "targetOwnerUsername": null,
+        "targetOwnerFullName": null,
+        "isRead": false,
+        "createdAt": "2025-05-22T10:30:00Z",
+        "message": "Thông báo hệ thống",
+        "redirectUrl": "/user/2"
+    }
+}
+```
+
+## 10. Xóa thông báo cũ (chỉ dành cho Admin)
+- **URL**: `/api/notifications/cleanup`
+- **Method**: `DELETE`
+- **Auth**: Yêu cầu đăng nhập (ROLE_ADMIN)
+- **Params**:
+  - `daysToKeep`: Số ngày giữ lại thông báo (mặc định: 30)
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã xóa 120 thông báo cũ thành công",
+    "data": 120
+}
+```
+
+## Mã lỗi phổ biến
+- `400 Bad Request`: Dữ liệu không hợp lệ
+- `401 Unauthorized`: Không có quyền truy cập
+- `403 Forbidden`: Không có quyền thực hiện hành động
+- `404 Not Found`: Không tìm thấy thông báo
+- `500 Internal Server Error`: Lỗi máy chủ
+
+## Loại thông báo (Type)
+- `LIKE_POST`: Thích bài viết
+- `LIKE_COMMENT`: Thích bình luận
+- `COMMENT`: Bình luận bài viết
+- `REPLY_POST`: Trả lời bài viết
+- `REPLY_COMMENT`: Trả lời bình luận
+- `FOLLOW`: Theo dõi người dùng
+- `MENTION_POST`: Đề cập trong bài viết
+- `MENTION_COMMENT`: Đề cập trong bình luận
+- `REPOST`: Chia sẻ bài viết
+- `SYSTEM`: Thông báo hệ thống
+
+## Loại đối tượng (TargetType)
+- `POST`: Bài viết
+- `COMMENT`: Bình luận
+- `USER`: Người dùng
+
+## Lưu ý
+- Người dùng chỉ có thể xem và quản lý thông báo của chính mình.
+- Admin có thể tạo thông báo cho bất kỳ người dùng nào.
+- Các thông báo sẽ được tạo tự động khi có các hành động tương ứng trong hệ thống (như like, comment, follow, mention).
+- Thuộc tính `redirectUrl` trong response sẽ chỉ ra URL mà frontend nên chuyển hướng người dùng đến khi họ nhấp vào thông báo.
+- Thông báo có thể được đánh dấu đã đọc riêng lẻ hoặc hàng loạt.
+- Hệ thống tự động xóa các thông báo cũ (mặc định là thông báo cũ hơn 30 ngày) để giữ cho cơ sở dữ liệu không bị quá tải.

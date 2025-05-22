@@ -7,6 +7,7 @@ import com.yapping.entity.User;
 import com.yapping.repository.FollowRepository;
 import com.yapping.repository.UserRepository;
 import com.yapping.service.FollowService;
+import com.yapping.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +17,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class FollowServiceImpl implements FollowService {
+public class FollowServiceImpl implements FollowService { 
 
     @Autowired
     private FollowRepository followRepository;
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional
@@ -47,9 +51,11 @@ public class FollowServiceImpl implements FollowService {
         follow.setId(followId);
         follow.setFollower(follower);
         follow.setFollowed(followed);
-        follow.setCreatedAt(Instant.now());
-
+        follow.setCreatedAt(Instant.now());        
         followRepository.save(follow);
+
+        // Tạo thông báo cho người được follow
+        notificationService.createFollowNotification(followerId, followedId);
 
         // Chuyển đổi thành DTO để trả về
         FollowDTO followDTO = new FollowDTO();

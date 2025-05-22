@@ -1,0 +1,283 @@
+# YAPPING MENTION API
+
+## 1. Tạo đề cập mới
+- **URL**: `/api/mentions`
+- **Method**: `POST`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Request Body**:
+```json
+{
+    "mentionedUserId": 2,    // ID của người dùng được đề cập (bắt buộc)
+    "postId": 1,             // ID của bài đăng (không bắt buộc nếu có commentId)
+    "commentId": null        // ID của bình luận (không bắt buộc nếu có postId)
+}
+```
+- **Response**:
+```json
+{
+    "status": 201,
+    "success": true,
+    "message": "Đã tạo đề cập thành công",
+    "data": {
+        "id": 1,
+        "mentionedUserId": 2,
+        "mentionedUsername": "user123",
+        "mentionedUserFullName": "Nguyễn Văn A",
+        "mentionedUserProfilePicture": "url_to_profile_picture",
+        "mentioningUserId": 3,
+        "mentioningUsername": "user456",
+        "mentioningUserFullName": "Trần Thị B",
+        "mentioningUserProfilePicture": "url_to_profile_picture",
+        "postId": 1,
+        "postContent": "Nội dung bài đăng",
+        "commentId": null,
+        "commentContent": null,
+        "createdAt": "2025-05-22T10:30:00Z"
+    }
+}
+```
+
+## 2. Tạo đề cập từ văn bản
+- **URL**: `/api/mentions/from-text`
+- **Method**: `POST`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Request Params**:
+  - `text`: Văn bản có chứa @username để phân tích
+  - `postId`: ID của bài đăng (không bắt buộc nếu có commentId)
+  - `commentId`: ID của bình luận (không bắt buộc nếu có postId)
+- **Response**:
+```json
+{
+    "status": 201,
+    "success": true,
+    "message": "Đã tạo 2 đề cập thành công",
+    "data": [
+        {
+            "id": 1,
+            "mentionedUserId": 2,
+            "mentionedUsername": "user123",
+            "mentionedUserFullName": "Nguyễn Văn A",
+            "mentionedUserProfilePicture": "url_to_profile_picture",
+            "mentioningUserId": 3,
+            "mentioningUsername": "user456",
+            "mentioningUserFullName": "Trần Thị B",
+            "mentioningUserProfilePicture": "url_to_profile_picture",
+            "postId": 1,
+            "postContent": "Nội dung bài đăng",
+            "commentId": null,
+            "commentContent": null,
+            "createdAt": "2025-05-22T10:30:00Z"
+        },
+        {
+            "id": 2,
+            "mentionedUserId": 4,
+            "mentionedUsername": "user789",
+            "mentionedUserFullName": "Lê Văn C",
+            "mentionedUserProfilePicture": "url_to_profile_picture",
+            "mentioningUserId": 3,
+            "mentioningUsername": "user456",
+            "mentioningUserFullName": "Trần Thị B",
+            "mentioningUserProfilePicture": "url_to_profile_picture",
+            "postId": 1,
+            "postContent": "Nội dung bài đăng",
+            "commentId": null,
+            "commentContent": null,
+            "createdAt": "2025-05-22T10:30:10Z"
+        }
+    ]
+}
+```
+
+## 3. Xóa đề cập
+- **URL**: `/api/mentions/{mentionId}`
+- **Method**: `DELETE`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã xóa đề cập thành công",
+    "data": null
+}
+```
+
+## 4. Lấy đề cập theo ID
+- **URL**: `/api/mentions/{mentionId}`
+- **Method**: `GET`
+- **Auth**: Không yêu cầu
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã lấy đề cập thành công",
+    "data": {
+        "id": 1,
+        "mentionedUserId": 2,
+        "mentionedUsername": "user123",
+        "mentionedUserFullName": "Nguyễn Văn A",
+        "mentionedUserProfilePicture": "url_to_profile_picture",
+        "mentioningUserId": 3,
+        "mentioningUsername": "user456",
+        "mentioningUserFullName": "Trần Thị B",
+        "mentioningUserProfilePicture": "url_to_profile_picture",
+        "postId": 1,
+        "postContent": "Nội dung bài đăng",
+        "commentId": null,
+        "commentContent": null,
+        "createdAt": "2025-05-22T10:30:00Z"
+    }
+}
+```
+
+## 5. Lấy tất cả đề cập của một người dùng (người được đề cập)
+- **URL**: `/api/mentions/mentioned-user/{userId}`
+- **Method**: `GET`
+- **Auth**: Không yêu cầu
+- **Params**:
+  - `page`: Số trang (mặc định: 0)
+  - `size`: Số lượng đề cập trên mỗi trang (mặc định: 10)
+  - `sortBy`: Trường sắp xếp (mặc định: createdAt)
+  - `direction`: Hướng sắp xếp (asc/desc, mặc định: desc)
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã lấy danh sách đề cập thành công",
+    "data": {
+        "content": [
+            {
+                "id": 1,
+                "mentionedUserId": 2,
+                "mentionedUsername": "user123",
+                "mentionedUserFullName": "Nguyễn Văn A",
+                "mentionedUserProfilePicture": "url_to_profile_picture",
+                "mentioningUserId": 3,
+                "mentioningUsername": "user456",
+                "mentioningUserFullName": "Trần Thị B",
+                "mentioningUserProfilePicture": "url_to_profile_picture",
+                "postId": 1,
+                "postContent": "Nội dung bài đăng",
+                "commentId": null,
+                "commentContent": null,
+                "createdAt": "2025-05-22T10:30:00Z"
+            }
+        ],
+        "pageable": {
+            "pageNumber": 0,
+            "pageSize": 10,
+            "sort": {
+                "orders": [
+                    {
+                        "direction": "DESC",
+                        "property": "createdAt"
+                    }
+                ]
+            }
+        },
+        "totalElements": 1,
+        "totalPages": 1,
+        "last": true,
+        "first": true,
+        "size": 10,
+        "number": 0,
+        "sort": {
+            "orders": [
+                {
+                    "direction": "DESC",
+                    "property": "createdAt"
+                }
+            ]
+        },
+        "numberOfElements": 1,
+        "empty": false
+    }
+}
+```
+
+## 6. Lấy tất cả đề cập do một người dùng tạo ra (người đề cập)
+- **URL**: `/api/mentions/mentioning-user/{userId}`
+- **Method**: `GET`
+- **Auth**: Không yêu cầu
+- **Params**:
+  - `page`: Số trang (mặc định: 0)
+  - `size`: Số lượng đề cập trên mỗi trang (mặc định: 10)
+  - `sortBy`: Trường sắp xếp (mặc định: createdAt)
+  - `direction`: Hướng sắp xếp (asc/desc, mặc định: desc)
+- **Response**: Tương tự như API lấy tất cả đề cập của một người dùng
+
+## 7. Lấy tất cả đề cập trong một bài đăng
+- **URL**: `/api/mentions/post/{postId}`
+- **Method**: `GET`
+- **Auth**: Không yêu cầu
+- **Params**:
+  - `page`: Số trang (mặc định: 0)
+  - `size`: Số lượng đề cập trên mỗi trang (mặc định: 10)
+  - `sortBy`: Trường sắp xếp (mặc định: createdAt)
+  - `direction`: Hướng sắp xếp (asc/desc, mặc định: desc)
+- **Response**: Tương tự như API lấy tất cả đề cập của một người dùng
+
+## 8. Lấy tất cả đề cập trong một bình luận
+- **URL**: `/api/mentions/comment/{commentId}`
+- **Method**: `GET`
+- **Auth**: Không yêu cầu
+- **Params**:
+  - `page`: Số trang (mặc định: 0)
+  - `size`: Số lượng đề cập trên mỗi trang (mặc định: 10)
+  - `sortBy`: Trường sắp xếp (mặc định: createdAt)
+  - `direction`: Hướng sắp xếp (asc/desc, mặc định: desc)
+- **Response**: Tương tự như API lấy tất cả đề cập của một người dùng
+
+## 9. Lấy các đề cập chưa đọc của người dùng
+- **URL**: `/api/mentions/unread`
+- **Method**: `GET`
+- **Auth**: Yêu cầu đăng nhập (ROLE_USER hoặc ROLE_ADMIN)
+- **Params**:
+  - `page`: Số trang (mặc định: 0)
+  - `size`: Số lượng đề cập trên mỗi trang (mặc định: 10)
+  - `sortBy`: Trường sắp xếp (mặc định: createdAt)
+  - `direction`: Hướng sắp xếp (asc/desc, mặc định: desc)
+- **Response**: Tương tự như API lấy tất cả đề cập của một người dùng, nhưng chỉ trả về các đề cập chưa đọc
+
+## 10. Đếm số lượng đề cập của một người dùng
+- **URL**: `/api/mentions/count/{userId}`
+- **Method**: `GET`
+- **Auth**: Không yêu cầu
+- **Response**:
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã đếm số đề cập thành công",
+    "data": 5
+}
+```
+
+## 11. Tìm kiếm đề cập
+- **URL**: `/api/mentions/search`
+- **Method**: `GET`
+- **Auth**: Không yêu cầu
+- **Params**:
+  - `mentionedUserId`: ID của người dùng được đề cập (không bắt buộc)
+  - `mentioningUserId`: ID của người dùng đề cập (không bắt buộc)
+  - `postId`: ID của bài đăng (không bắt buộc)
+  - `commentId`: ID của bình luận (không bắt buộc)
+  - `page`: Số trang (mặc định: 0)
+  - `size`: Số lượng đề cập trên mỗi trang (mặc định: 10)
+  - `sortBy`: Trường sắp xếp (mặc định: createdAt)
+  - `direction`: Hướng sắp xếp (asc/desc, mặc định: desc)
+- **Response**: Tương tự như API lấy tất cả đề cập của một người dùng
+
+## Mã lỗi phổ biến
+- `400 Bad Request`: Dữ liệu không hợp lệ
+- `401 Unauthorized`: Không có quyền truy cập
+- `404 Not Found`: Không tìm thấy đề cập
+- `500 Internal Server Error`: Lỗi máy chủ
+
+## Lưu ý
+- Khi tạo đề cập, ít nhất một trong hai trường `postId` hoặc `commentId` phải được cung cấp.
+- Khi sử dụng tính năng tạo đề cập từ văn bản, hệ thống sẽ tự động phân tích và tìm kiếm những @username hợp lệ.
+- Khi bài đăng hoặc bình luận bị xóa, các đề cập liên quan cũng sẽ bị xóa theo.
+- Mỗi người dùng chỉ có thể được đề cập một lần trong một bài đăng hoặc bình luận cụ thể.

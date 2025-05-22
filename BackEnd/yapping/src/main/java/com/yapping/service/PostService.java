@@ -15,9 +15,12 @@ public interface PostService {
 
     Page<PostDTO> getPublicPosts(Pageable pageable);
 
-    PostDTO updatePost(Long id, PostDTO postDTO, Long userId);
-
+    PostDTO updatePost(Long id, PostDTO postDTO, Long userId);    
+    
     PostDTO deletePost(Long id, Long userId);
 
     PostDTO patchPost(Long id, PatchPostDTO patchPostDTO, Long userId);
+    
+    // Tăng lượt thích cho bài đăng
+    PostDTO likePost(Long postId, Long userId);
 }

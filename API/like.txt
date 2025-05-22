@@ -1,0 +1,97 @@
+# API Like Bài Đăng và Bình Luận
+
+## 1. Like Bài Đăng
+
+### Mô tả
+API này cho phép người dùng thích một bài đăng và gửi thông báo đến chủ bài đăng.
+
+### Endpoint
+**POST**: `/api/posts/{id}/like`
+
+### Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+
+### Path Parameters
+- `id`: ID của bài đăng cần thích (bắt buộc)
+
+### Response
+#### Success (Status: 200 OK)
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã thích bài đăng có ID 1 thành công",
+    "data": {
+        "id": 1,
+        "user": {
+            "id": 1,
+            "username": "user1",
+            "fullName": "User One",
+            "profilePicture": "/uploads/profile-pictures/user1.jpg"
+        },
+        "content": "Nội dung bài đăng",
+        "visibility": "PUBLIC",
+        "likeCount": 1,
+        "commentCount": 0,
+        "createdAt": "2025-05-22T12:34:56Z",
+        "updatedAt": "2025-05-22T12:34:56Z"
+    }
+}
+```
+
+#### Error (Status: 404 Not Found)
+```json
+{
+    "status": 404,
+    "success": false,
+    "message": "Không tìm thấy bài đăng với ID: 999",
+    "data": null
+}
+```
+
+## 2. Like Bình Luận
+
+### Mô tả
+API này cho phép người dùng thích một bình luận và gửi thông báo đến chủ bình luận.
+
+### Endpoint
+**POST**: `/api/comments/{commentId}/like`
+
+### Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+
+### Path Parameters
+- `commentId`: ID của bình luận cần thích (bắt buộc)
+
+### Response
+#### Success (Status: 200 OK)
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã thích bình luận thành công",
+    "data": {
+        "id": 1,
+        "postId": 1,
+        "userId": 2,
+        "username": "user2",
+        "userFullName": "User Two",
+        "userProfilePicture": "/uploads/profile-pictures/user2.jpg",
+        "parentCommentId": null,
+        "content": "Nội dung bình luận",
+        "likeCount": 1,
+        "createdAt": "2025-05-22T12:34:56Z",
+        "updatedAt": "2025-05-22T12:34:56Z"
+    }
+}
+```
+
+#### Error (Status: 404 Not Found)
+```json
+{
+    "status": 404,
+    "success": false,
+    "message": "Không tìm thấy bình luận với ID: 999",
+    "data": null
+}
+```

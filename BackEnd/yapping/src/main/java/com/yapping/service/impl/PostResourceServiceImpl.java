@@ -13,6 +13,8 @@ import com.yapping.repository.PostRepository;
 import com.yapping.repository.ResourceRepository;
 import com.yapping.repository.SubcategoryRepository;
 import com.yapping.repository.UserRepository;
+import com.yapping.service.MentionService;
+import com.yapping.service.NotificationService;
 import com.yapping.service.PostResourceService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.BeanUtils;
@@ -41,6 +43,12 @@ public class PostResourceServiceImpl implements PostResourceService {
     
     @Autowired
     private SubcategoryRepository subcategoryRepository;
+    
+    @Autowired
+    private MentionService mentionService;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional
@@ -77,6 +85,35 @@ public class PostResourceServiceImpl implements PostResourceService {
 
         // 2. Tạo Resource
         Resource resource = createResource(postWithResourceDTO, savedPost, user);
+        
+        // Xử lý mentions trong nội dung bài đăng
+        if (postWithResourceDTO.getContent() != null && !postWithResourceDTO.getContent().isEmpty()) {
+            mentionService.createMentionsFromText(
+                    postWithResourceDTO.getContent(), 
+                    userId, 
+                    savedPost.getId(), 
+                    null
+            );
+        }
+        
+        // Tạo thông báo cho người theo dõi nếu bài đăng là PUBLIC hoặc FOLLOWERS_ONLY
+        if (post.getVisibility() != Post.Visibility.PRIVATE) {
+            // Lấy danh sách người theo dõi
+            List<User> followers = userRepository.findFollowersByUserId(userId);
+            
+            // Tạo thông báo cho mỗi người theo dõi
+            for (User follower : followers) {
+                // Không tạo thông báo cho chính người đăng
+                if (!follower.getId().equals(userId)) {
+                    // Tạo thông báo về bài đăng mới
+                    notificationService.createPostNotification(
+                            follower.getId(),  // ID người nhận thông báo
+                            userId,            // ID người đăng bài
+                            savedPost.getId()  // ID bài đăng
+                    );
+                }
+            }
+        }
         
         // 3. Chuyển Post thành DTO (kèm theo thông tin Resource)
         PostDTO postDTO = convertToPostDTO(savedPost, resource);

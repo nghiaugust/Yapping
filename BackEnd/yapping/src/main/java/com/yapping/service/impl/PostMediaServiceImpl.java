@@ -10,6 +10,8 @@ import com.yapping.repository.MediaRepository;
 import com.yapping.repository.PostRepository;
 import com.yapping.repository.UserRepository;
 import com.yapping.service.FileStorageService;
+import com.yapping.service.MentionService;
+import com.yapping.service.NotificationService;
 import com.yapping.service.PostMediaService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,12 @@ public class PostMediaServiceImpl implements PostMediaService {
 
     @Autowired
     private FileStorageService fileStorageService;
+    
+    @Autowired
+    private MentionService mentionService;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional
@@ -124,6 +132,35 @@ public class PostMediaServiceImpl implements PostMediaService {
 
             // Lưu tất cả media
             mediaRepository.saveAll(mediaList);
+        }
+
+        // Xử lý mentions trong nội dung bài đăng
+        if (postWithMediaDTO.getContent() != null && !postWithMediaDTO.getContent().isEmpty()) {
+            mentionService.createMentionsFromText(
+                    postWithMediaDTO.getContent(), 
+                    userId, 
+                    savedPost.getId(), 
+                    null
+            );
+        }
+        
+        // Tạo thông báo cho người theo dõi nếu bài đăng là PUBLIC hoặc FOLLOWERS_ONLY
+        if (post.getVisibility() != Post.Visibility.PRIVATE) {
+            // Lấy danh sách người theo dõi
+            List<User> followers = userRepository.findFollowersByUserId(userId);
+            
+            // Tạo thông báo cho mỗi người theo dõi
+            for (User follower : followers) {
+                // Không tạo thông báo cho chính người đăng
+                if (!follower.getId().equals(userId)) {
+                    // Tạo thông báo về bài đăng mới
+                    notificationService.createPostNotification(
+                            follower.getId(),  // ID người nhận thông báo
+                            userId,            // ID người đăng bài
+                            savedPost.getId()  // ID bài đăng
+                    );
+                }
+            }
         }
 
         // 3. Chuyển Post thành DTO

@@ -58,6 +58,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/categories/**").authenticated()
                         .requestMatchers("/api/subcategories/**").authenticated()
                         .requestMatchers("/api/resources/**").authenticated()
+                        .requestMatchers("/api/comments/**").authenticated()
+                        .requestMatchers("/api/mentions/**").authenticated()
+                        .requestMatchers("/api/notifications/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

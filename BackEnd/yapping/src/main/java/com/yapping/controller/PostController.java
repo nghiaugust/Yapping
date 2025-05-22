@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Map;
 import java.util.Optional;
@@ -138,6 +137,23 @@ public class PostController {
                 true,
                 "Đã cập nhật bài đăng có ID " + id + " thành công",
                 updatedPost
+        );        
+        return ResponseEntity.ok(response);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PostMapping("/{id}/like")
+    public ResponseEntity<ApiResponse> likePost(@PathVariable Long id) {
+        Map<String, Object> details = (Map<String, Object>) SecurityContextHolder.getContext().getAuthentication().getDetails();
+        Map<String, Object> claims = (Map<String, Object>) details.get("claims");
+        Long userId = (Long) claims.get("userId");
+
+        PostDTO likedPost = postService.likePost(id, userId);
+        ApiResponse response = new ApiResponse(
+                HttpStatus.OK.value(),
+                true,
+                "Đã thích bài đăng có ID " + id + " thành công",
+                likedPost
         );
         return ResponseEntity.ok(response);
     }

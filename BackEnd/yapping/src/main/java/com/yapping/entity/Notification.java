@@ -53,10 +53,10 @@ public class Notification {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
-    private Instant createdAt;
-
+    private Instant createdAt;   
+    
     public enum Type {
-        LIKE_POST, LIKE_COMMENT, COMMENT, REPLY_POST, REPLY_COMMENT, FOLLOW, MENTION_POST, MENTION_COMMENT, REPOST, SYSTEM
+        LIKE_POST, LIKE_COMMENT, COMMENT, REPLY_POST, REPLY_COMMENT, FOLLOW, MENTION_POST, MENTION_COMMENT, REPOST, NEW_POST, SYSTEM
     }
     public enum TargetType {
         POST, COMMENT,USER

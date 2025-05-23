@@ -10,6 +10,7 @@ import com.yapping.repository.CommentRepository;
 import com.yapping.repository.PostRepository;
 import com.yapping.repository.UserRepository;
 import com.yapping.service.CommentService;
+import com.yapping.service.LikeService;
 import com.yapping.service.MentionService;
 import com.yapping.service.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
@@ -40,6 +41,9 @@ public class CommentServiceImpl implements CommentService {
     
     @Autowired
     private MentionService mentionService;
+    
+    @Autowired
+    private LikeService likeService;
 
     @Override
     @Transactional
@@ -246,6 +250,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bình luận với ID: " + commentId));
         
+        // Tăng số lượt thích của bình luận
         comment.setLikeCount(comment.getLikeCount() == null ? 1 : comment.getLikeCount() + 1);
         Comment updatedComment = commentRepository.save(comment);
         
@@ -255,23 +260,33 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDTO likeComment(Long commentId, Long userId) {
+        // Kiểm tra bình luận tồn tại
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bình luận với ID: " + commentId));
         
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng với ID: " + userId));
+        // Kiểm tra xem người dùng đã thích bình luận chưa
+        boolean hasLiked = likeService.hasUserLiked(userId, com.yapping.entity.Like.TargetType.COMMENT, commentId);
         
-        comment.setLikeCount(comment.getLikeCount() == null ? 1 : comment.getLikeCount() + 1);
-        Comment updatedComment = commentRepository.save(comment);
-        
-        // Tạo thông báo cho chủ bình luận
-        if (!user.getId().equals(comment.getUser().getId())) {
-            notificationService.createLikeCommentNotification(
-                    userId,
-                    commentId,
-                    comment.getUser().getId()
-            );
+        if (!hasLiked) {
+            // Tăng số lượt thích của bình luận
+            comment.setLikeCount(comment.getLikeCount() == null ? 1 : comment.getLikeCount() + 1);
+            commentRepository.save(comment);
+            
+            // Tạo thông báo cho chủ bình luận nếu người thích không phải là chủ bình luận
+            if (!userId.equals(comment.getUser().getId())) {
+                notificationService.createLikeCommentNotification(
+                        userId,
+                        commentId,
+                        comment.getUser().getId()
+                );
+            }
+            
+            // Tạo bản ghi like trong database
+            likeService.likeComment(userId, commentId);
         }
+        
+        // Lấy bình luận đã cập nhật
+        Comment updatedComment = commentRepository.findById(commentId).get();
         
         return convertToDTO(updatedComment);
     }

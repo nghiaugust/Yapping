@@ -10,10 +10,7 @@ import com.yapping.repository.PostRepository;
 import com.yapping.repository.UserRepository;
 import com.yapping.repository.MediaRepository;
 import com.yapping.repository.FollowRepository;
-import com.yapping.service.PostService;
-import com.yapping.service.FileStorageService;
-import com.yapping.service.MentionService;
-import com.yapping.service.NotificationService;
+import com.yapping.service.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -50,6 +47,9 @@ public class PostServiceImpl implements PostService {
     
     @Autowired
     private MentionService mentionService;
+    
+    @Autowired
+    private LikeService likeService;
 
     private PostDTO toPostDTO(Post post) {
         PostDTO postDTO = new PostDTO();
@@ -279,22 +279,29 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bài đăng với ID: " + postId));
         
-        // Tìm người dùng
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng với ID: " + userId));
+        // Kiểm tra xem người dùng đã thích bài đăng chưa
+        boolean hasLiked = likeService.hasUserLiked(userId, com.yapping.entity.Like.TargetType.POST, postId);
         
-        // Tăng số lượt thích của bài đăng
-        post.setLikeCount(post.getLikeCount() == null ? 1 : post.getLikeCount() + 1);
-        Post updatedPost = postRepository.save(post);
-        
-        // Tạo thông báo cho chủ bài đăng
-        if (!userId.equals(post.getUser().getId())) {
-            notificationService.createLikePostNotification(
-                    userId,
-                    postId,
-                    post.getUser().getId()
-            );
+        if (!hasLiked) {
+            // Tăng số lượt thích của bài đăng
+            post.setLikeCount(post.getLikeCount() == null ? 1 : post.getLikeCount() + 1);
+            postRepository.save(post);
+            
+            // Tạo thông báo cho chủ bài đăng nếu người thích không phải là chủ bài đăng
+            if (!userId.equals(post.getUser().getId())) {
+                notificationService.createLikePostNotification(
+                        userId,
+                        postId,
+                        post.getUser().getId()
+                );
+            }
+            
+            // Tạo bản ghi like trong database
+            likeService.likePost(userId, postId);
         }
+        
+        // Lấy bài đăng đã cập nhật
+        Post updatedPost = postRepository.findById(postId).get();
         
         return toPostDTO(updatedPost);
     }

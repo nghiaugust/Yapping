@@ -1,0 +1,370 @@
+# API Repost - Đăng lại bài viết
+
+## 1. Đăng lại bài viết
+
+### Mô tả
+API này cho phép người dùng đăng lại một bài viết và gửi thông báo đến chủ bài viết. Người dùng không thể đăng lại cùng một bài viết nhiều lần.
+
+### Endpoint
+**POST**: `/api/reposts`
+
+### Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+- `Content-Type: application/json` (bắt buộc)
+
+### Request Body
+```json
+{
+    "postId": 123
+}
+```
+
+### Các trường trong Request
+- `postId`: ID của bài viết cần đăng lại (bắt buộc)
+
+### Successful Response (Status: 201 Created)
+```json
+{
+    "status": 201,
+    "success": true,
+    "message": "Đã đăng lại bài viết thành công",
+    "data": {
+        "id": 1,
+        "userId": 2,
+        "username": "user123",
+        "userFullName": "Nguyễn Văn A",
+        "userProfilePicture": "url_to_profile_picture",
+        "postId": 123,
+        "createdAt": "2025-05-22T12:34:56Z"
+    }
+}
+```
+
+### Error (Status: 400 Bad Request)
+```json
+{
+    "status": 400,
+    "success": false,
+    "message": "Người dùng đã đăng lại bài viết này",
+    "data": null
+}
+```
+
+### Error (Status: 404 Not Found)
+```json
+{
+    "status": 404,
+    "success": false,
+    "message": "Không tìm thấy bài đăng với ID: 123",
+    "data": null
+}
+```
+
+## 2. Hủy đăng lại bài viết
+
+### Mô tả
+API này cho phép người dùng hủy đăng lại một bài viết.
+
+### Endpoint
+**DELETE**: `/api/reposts/{id}`
+
+### Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+
+### Path Parameters
+- `id`: ID của bản ghi đăng lại cần hủy
+
+### Successful Response (Status: 200 OK)
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã hủy đăng lại bài viết thành công",
+    "data": null
+}
+```
+
+### Error (Status: 404 Not Found)
+```json
+{
+    "status": 404,
+    "success": false,
+    "message": "Không tìm thấy repost với ID: 1",
+    "data": null
+}
+```
+
+### Error (Status: 403 Forbidden)
+```json
+{
+    "status": 403,
+    "success": false,
+    "message": "Không có quyền xóa repost này",
+    "data": null
+}
+```
+
+## 3. Hủy đăng lại bài viết theo bài viết
+
+### Mô tả
+API này cho phép người dùng hủy đăng lại một bài viết cụ thể.
+
+### Endpoint
+**DELETE**: `/api/reposts/post/{postId}`
+
+### Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+
+### Path Parameters
+- `postId`: ID của bài viết cần hủy đăng lại
+
+### Successful Response (Status: 200 OK)
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đã hủy đăng lại bài viết thành công",
+    "data": null
+}
+```
+
+## 4. Lấy thông tin đăng lại theo ID
+
+### Mô tả
+API này cho phép lấy thông tin chi tiết về một bản ghi đăng lại.
+
+### Endpoint
+**GET**: `/api/reposts/{id}`
+
+### Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+
+### Path Parameters
+- `id`: ID của bản ghi đăng lại cần lấy thông tin
+
+### Successful Response (Status: 200 OK)
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Lấy thông tin đăng lại thành công",
+    "data": {
+        "id": 1,
+        "userId": 2,
+        "username": "user123",
+        "userFullName": "Nguyễn Văn A",
+        "userProfilePicture": "url_to_profile_picture",
+        "postId": 123,
+        "createdAt": "2025-05-22T12:34:56Z"
+    }
+}
+```
+
+### Error (Status: 404 Not Found)
+```json
+{
+    "status": 404,
+    "success": false,
+    "message": "Không tìm thấy repost với ID: 1",
+    "data": null
+}
+```
+
+## 5. Lấy danh sách đăng lại của người dùng
+
+### Mô tả
+API này cho phép lấy danh sách các bài viết mà một người dùng đã đăng lại.
+
+### Endpoint
+**GET**: `/api/reposts/user/{userId}`
+
+### Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+
+### Path Parameters
+- `userId`: ID của người dùng cần lấy danh sách đăng lại
+
+### Query Parameters
+- `page`: Số trang (mặc định: 0)
+- `size`: Số lượng bản ghi trên mỗi trang (mặc định: 20)
+
+### Successful Response (Status: 200 OK)
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Lấy danh sách đăng lại thành công",
+    "data": {
+        "content": [
+            {
+                "id": 1,
+                "userId": 2,
+                "username": "user123",
+                "userFullName": "Nguyễn Văn A",
+                "userProfilePicture": "url_to_profile_picture",
+                "postId": 123,
+                "createdAt": "2025-05-22T12:34:56Z"
+            },
+            {
+                "id": 2,
+                "userId": 2,
+                "username": "user123",
+                "userFullName": "Nguyễn Văn A",
+                "userProfilePicture": "url_to_profile_picture",
+                "postId": 124,
+                "createdAt": "2025-05-22T11:30:00Z"
+            }
+        ],
+        "pageable": {
+            "pageNumber": 0,
+            "pageSize": 20,
+            "sort": {
+                "orders": [
+                    {
+                        "direction": "DESC",
+                        "property": "createdAt"
+                    }
+                ]
+            }
+        },
+        "totalElements": 2,
+        "totalPages": 1,
+        "last": true,
+        "first": true,
+        "size": 20,
+        "number": 0,
+        "numberOfElements": 2,
+        "empty": false
+    }
+}
+```
+
+## 6. Lấy danh sách người đăng lại bài viết
+
+### Mô tả
+API này cho phép lấy danh sách những người đã đăng lại một bài viết cụ thể.
+
+### Endpoint
+**GET**: `/api/reposts/post/{postId}`
+
+### Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+
+### Path Parameters
+- `postId`: ID của bài viết cần lấy danh sách đăng lại
+
+### Query Parameters
+- `page`: Số trang (mặc định: 0)
+- `size`: Số lượng bản ghi trên mỗi trang (mặc định: 20)
+
+### Successful Response (Status: 200 OK)
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Lấy danh sách đăng lại thành công",
+    "data": {
+        "content": [
+            {
+                "id": 1,
+                "userId": 2,
+                "username": "user123",
+                "userFullName": "Nguyễn Văn A",
+                "userProfilePicture": "url_to_profile_picture",
+                "postId": 123,
+                "createdAt": "2025-05-22T12:34:56Z"
+            },
+            {
+                "id": 3,
+                "userId": 3,
+                "username": "user456",
+                "userFullName": "Trần Thị B",
+                "userProfilePicture": "url_to_profile_picture",
+                "postId": 123,
+                "createdAt": "2025-05-22T10:15:00Z"
+            }
+        ],
+        "pageable": {
+            "pageNumber": 0,
+            "pageSize": 20,
+            "sort": {
+                "orders": [
+                    {
+                        "direction": "DESC",
+                        "property": "createdAt"
+                    }
+                ]
+            }
+        },
+        "totalElements": 2,
+        "totalPages": 1,
+        "last": true,
+        "first": true,
+        "size": 20,
+        "number": 0,
+        "numberOfElements": 2,
+        "empty": false
+    }
+}
+```
+
+## 7. Kiểm tra người dùng đã đăng lại bài viết chưa
+
+### Mô tả
+API này cho phép kiểm tra xem người dùng hiện tại đã đăng lại một bài viết cụ thể hay chưa.
+
+### Endpoint
+**GET**: `/api/reposts/check`
+
+### Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+
+### Query Parameters
+- `postId`: ID của bài viết cần kiểm tra (bắt buộc)
+
+### Successful Response (Status: 200 OK)
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Kiểm tra thành công",
+    "data": true
+}
+```
+
+## 8. Đếm số lượt đăng lại của bài viết
+
+### Mô tả
+API này cho phép đếm số lượt đăng lại của một bài viết cụ thể.
+
+### Endpoint
+**GET**: `/api/reposts/count`
+
+### Headers
+- `Authorization: Bearer your_jwt_token` (bắt buộc)
+
+### Query Parameters
+- `postId`: ID của bài viết cần đếm số lượt đăng lại (bắt buộc)
+
+### Successful Response (Status: 200 OK)
+```json
+{
+    "status": 200,
+    "success": true,
+    "message": "Đếm số lượt đăng lại thành công",
+    "data": 42
+}
+```
+
+## Mã lỗi phổ biến
+- `400 Bad Request`: Dữ liệu không hợp lệ hoặc người dùng đã đăng lại bài viết
+- `401 Unauthorized`: Không có quyền truy cập
+- `403 Forbidden`: Không có quyền thực hiện hành động
+- `404 Not Found`: Không tìm thấy bài viết hoặc bản ghi đăng lại
+- `500 Internal Server Error`: Lỗi máy chủ
+
+## Lưu ý
+- Người dùng chỉ có thể đăng lại một bài viết một lần. Nếu muốn đăng lại lần nữa, họ phải hủy đăng lại trước đó.
+- Khi một người dùng đăng lại bài viết, chủ bài viết sẽ nhận được thông báo (nếu người đăng lại không phải là chủ bài viết).
+- Số lượt đăng lại của bài viết sẽ tăng lên khi có người đăng lại và giảm đi khi có người hủy đăng lại.
+- Người dùng chỉ có thể hủy đăng lại các bài viết mà họ đã đăng lại trước đó.

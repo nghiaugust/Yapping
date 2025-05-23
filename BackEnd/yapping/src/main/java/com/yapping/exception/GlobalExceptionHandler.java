@@ -181,9 +181,26 @@ public class GlobalExceptionHandler {
         } else if (message.contains("User not found")) {
             return "USER_NOT_FOUND";
         } else if (message.contains("Role not found")) {
-            return "ROLE_NOT_FOUND";
-        }
+            return "ROLE_NOT_FOUND";        }
         return "INVALID_REQUEST";
+    }
+
+    // Xử lý lỗi 404 (Not Found) cho ResourceNotFoundException
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleResourceNotFoundException(ResourceNotFoundException e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                e.getMessage()
+        );
+        problemDetail.setTitle("Tài nguyên không tìm thấy");
+        problemDetail.setType(URI.create("https://example.com/errors/not-found"));
+        problemDetail.setProperty("errorCode", "RESOURCE_NOT_FOUND");
+
+        if (isDevEnvironment()) {
+            problemDetail.setProperty("stackTrace", getLimitedStackTrace(e));
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
     }
 
     private Map<String, Object> extractDataFromMessage(String message) {

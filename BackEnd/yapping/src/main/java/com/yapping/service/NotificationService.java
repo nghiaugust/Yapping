@@ -34,6 +34,9 @@ public interface NotificationService {
     // Tạo thông báo reply comment
     NotificationDTO createReplyCommentNotification(Long actorId, Long parentCommentId, Long parentCommentOwnerId, Long commentId);
     
+    // Tạo thông báo repost
+    NotificationDTO createRepostNotification(Long actorId, Long postId, Long postOwnerId);
+    
     // Tạo thông báo bài đăng mới cho người theo dõi
     NotificationDTO createPostNotification(Long receiverId, Long actorId, Long postId);
     

@@ -311,6 +311,25 @@ public class NotificationServiceImpl implements NotificationService {
     
     @Override
     @Transactional
+    public NotificationDTO createRepostNotification(Long actorId, Long postId, Long postOwnerId) {
+        // Đảm bảo người repost và chủ bài đăng không phải là cùng một người
+        if (actorId.equals(postOwnerId)) {
+            return null;
+        }
+        
+        CreateNotificationDTO dto = new CreateNotificationDTO();
+        dto.setUserId(postOwnerId);
+        dto.setActorId(actorId);
+        dto.setType(Type.REPOST);
+        dto.setTargetType(TargetType.POST);
+        dto.setTargetId(postId);
+        dto.setTargetOwnerId(postOwnerId);
+        
+        return createNotification(dto);
+    }
+    
+    @Override
+    @Transactional
     public NotificationDTO createPostNotification(Long receiverId, Long actorId, Long postId) {
         // Đảm bảo người nhận thông báo và người tạo bài đăng không phải là cùng một người
         if (receiverId.equals(actorId)) {

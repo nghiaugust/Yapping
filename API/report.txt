@@ -1,0 +1,148 @@
+# Tài liệu API Báo cáo
+
+Tài liệu này cung cấp thông tin về API Báo cáo trong ứng dụng Yapping. API Báo cáo cho phép người dùng báo cáo nội dung không phù hợp (bài đăng hoặc bình luận) và quản trị viên quản lý các báo cáo này.
+
+## Cấu trúc đối tượng Báo cáo
+
+```json
+{
+  "id": 1,
+  "reporterId": 123,
+  "reporterUsername": "user123",
+  "targetType": "POST",
+  "targetId": 456,
+  "reason": "INAPPROPRIATE_CONTENT",
+  "description": "Bài đăng này chứa nội dung không phù hợp",
+  "status": "PENDING",
+  "createdAt": "2023-05-21T10:30:00Z",
+  "updatedAt": "2023-05-21T10:30:00Z"
+}
+```
+
+## Enums
+
+### Loại đối tượng (TargetType)
+- `POST`: Báo cáo về bài đăng
+- `COMMENT`: Báo cáo về bình luận
+
+### Lý do (Reason)
+- `SPAM`: Nội dung rác, quảng cáo
+- `HARASSMENT`: Quấy rối, bắt nạt
+- `HATE_SPEECH`: Ngôn từ thù địch
+- `INAPPROPRIATE_CONTENT`: Nội dung không phù hợp
+- `INTELLECTUAL_PROPERTY`: Vi phạm sở hữu trí tuệ
+- `MISINFORMATION`: Thông tin sai lệch
+- `OTHER`: Lý do khác (yêu cầu mô tả)
+
+### Trạng thái (Status)
+- `PENDING`: Đang chờ xem xét
+- `REVIEWING`: Đang xem xét
+- `RESOLVED_ACTION_TAKEN`: Đã giải quyết (có hành động)
+- `RESOLVED_NO_ACTION`: Đã giải quyết (không cần hành động)
+
+## Điểm cuối API
+
+### Tạo báo cáo
+- **URL**: `/api/reports`
+- **Phương thức**: `POST`
+- **Yêu cầu xác thực**: Vai trò `User` hoặc `Admin`
+- **Body yêu cầu**:
+  ```json
+  {
+    "targetType": "POST",
+    "targetId": 456,
+    "reason": "INAPPROPRIATE_CONTENT",
+    "description": "Mô tả tùy chọn"
+  }
+  ```
+- **Phản hồi thành công**: 201 Created
+
+### Lấy tất cả báo cáo (Chỉ Admin)
+- **URL**: `/api/reports?page=0&size=10&sortBy=createdAt&sortDir=desc`
+- **Phương thức**: `GET`
+- **Yêu cầu xác thực**: Vai trò `Admin`
+- **Tham số URL**: 
+  - `page`: Số trang (bắt đầu từ 0, mặc định 0)
+  - `size`: Kích thước trang (mặc định 10)
+  - `sortBy`: Trường để sắp xếp (mặc định "createdAt")
+  - `sortDir`: Hướng sắp xếp ("asc" hoặc "desc", mặc định "desc")
+- **Phản hồi thành công**: 200 OK
+
+### Lấy báo cáo theo ID
+- **URL**: `/api/reports/{id}`
+- **Phương thức**: `GET`
+- **Yêu cầu xác thực**: Vai trò `Admin`
+- **Phản hồi thành công**: 200 OK
+
+### Lấy báo cáo theo trạng thái
+- **URL**: `/api/reports/status/{status}?page=0&size=10`
+- **Phương thức**: `GET`
+- **Yêu cầu xác thực**: Vai trò `Admin`
+- **Tham số URL**: 
+  - `status`: Một trong `PENDING`, `REVIEWING`, `RESOLVED_ACTION_TAKEN`, `RESOLVED_NO_ACTION`
+  - `page`: Số trang (bắt đầu từ 0, mặc định 0)
+  - `size`: Kích thước trang (mặc định 10)
+- **Phản hồi thành công**: 200 OK
+
+### Lấy báo cáo theo lý do
+- **URL**: `/api/reports/reason/{reason}?page=0&size=10`
+- **Phương thức**: `GET`
+- **Yêu cầu xác thực**: Vai trò `Admin`
+- **Tham số URL**: 
+  - `reason`: Một trong `SPAM`, `HARASSMENT`, `HATE_SPEECH`, `INAPPROPRIATE_CONTENT`, `INTELLECTUAL_PROPERTY`, `MISINFORMATION`, `OTHER`
+  - `page`: Số trang (bắt đầu từ 0, mặc định 0)
+  - `size`: Kích thước trang (mặc định 10)
+- **Phản hồi thành công**: 200 OK
+
+### Lấy báo cáo theo đối tượng
+- **URL**: `/api/reports/target/{targetType}/{targetId}?page=0&size=10`
+- **Phương thức**: `GET`
+- **Yêu cầu xác thực**: Vai trò `Admin`
+- **Tham số URL**: 
+  - `targetType`: `POST` hoặc `COMMENT`
+  - `targetId`: ID của đối tượng
+  - `page`: Số trang (bắt đầu từ 0, mặc định 0)
+  - `size`: Kích thước trang (mặc định 10)
+- **Phản hồi thành công**: 200 OK
+
+### Lấy báo cáo của người dùng hiện tại
+- **URL**: `/api/reports/user?page=0&size=10`
+- **Phương thức**: `GET`
+- **Yêu cầu xác thực**: Vai trò `User` hoặc `Admin`
+- **Tham số URL**: 
+  - `page`: Số trang (bắt đầu từ 0, mặc định 0)
+  - `size`: Kích thước trang (mặc định 10)
+- **Phản hồi thành công**: 200 OK
+
+### Lấy báo cáo mới nhất
+- **URL**: `/api/reports/latest`
+- **Phương thức**: `GET`
+- **Yêu cầu xác thực**: Vai trò `Admin`
+- **Phản hồi thành công**: 200 OK, trả về 10 báo cáo mới nhất
+
+### Cập nhật trạng thái báo cáo
+- **URL**: `/api/reports/{id}/status`
+- **Phương thức**: `PATCH`
+- **Yêu cầu xác thực**: Vai trò `Admin`
+- **Body yêu cầu**:
+  ```json
+  {
+    "status": "REVIEWING"
+  }
+  ```
+- **Phản hồi thành công**: 200 OK
+
+### Xóa báo cáo
+- **URL**: `/api/reports/{id}`
+- **Phương thức**: `DELETE`
+- **Yêu cầu xác thực**: Vai trò `Admin`
+- **Phản hồi thành công**: 200 OK
+
+### Đếm báo cáo cho một đối tượng
+- **URL**: `/api/reports/count/{targetType}/{targetId}`
+- **Phương thức**: `GET`
+- **Yêu cầu xác thực**: Vai trò `Admin`
+- **Tham số URL**: 
+  - `targetType`: `POST` hoặc `COMMENT`
+  - `targetId`: ID của đối tượng
+- **Phản hồi thành công**: 200 OK, trả về số lượng ở định dạng `{"count": 5}`

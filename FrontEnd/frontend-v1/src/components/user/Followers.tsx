@@ -37,8 +37,7 @@ const Followers: React.FC = () => {
       open={visible}
       onOpenChange={(newVisible) => setVisible(newVisible)}
       placement="bottomRight" 
-    >
-      <TeamOutlined style={{ fontSize: "30px", cursor: "pointer", color: "#000000" }} />
+    >        <TeamOutlined style={{ fontSize: "24px", cursor: "pointer", color: "#ffffff" }} />
     </Popover>
   );
 };

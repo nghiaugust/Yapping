@@ -2,6 +2,7 @@ package com.yapping.service.impl;
 
 import com.yapping.dto.post.PatchPostDTO;
 import com.yapping.dto.post.PostDTO;
+import com.yapping.dto.media.MediaDTO;
 import com.yapping.entity.FollowId;
 import com.yapping.entity.Media;
 import com.yapping.entity.Post;
@@ -62,6 +63,19 @@ public class PostServiceImpl implements PostService {
 
         // Ánh xạ parentPostId
         postDTO.setParentPostId(post.getParentPost() != null ? post.getParentPost().getId() : null);
+        
+        // Lấy danh sách media và thêm vào DTO
+        List<Media> mediaList = mediaRepository.findByPostId(post.getId());
+        if (mediaList != null && !mediaList.isEmpty()) {
+            List<MediaDTO> mediaDTOList = mediaList.stream()
+                .map(media -> {
+                    MediaDTO mediaDTO = new MediaDTO();
+                    BeanUtils.copyProperties(media, mediaDTO);
+                    return mediaDTO;
+                })
+                .collect(java.util.stream.Collectors.toList());
+            postDTO.setMedia(mediaDTOList);
+        }
 
         return postDTO;
     }

@@ -31,7 +31,6 @@ public class PostMediaController {
     public ResponseEntity<ApiResponse> createPostWithMedia(
             @RequestPart(value = "content", required = true) String content,
             @RequestPart(value = "visibility", required = true) String visibility,
-            @RequestPart(value = "post_type", required = true) String type,
             @RequestPart(value = "parentPostId", required = false) String parentPostId,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
 

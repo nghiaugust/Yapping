@@ -51,8 +51,12 @@ const Login: React.FC = () => {
         setLoginData({ access_token, refresh_token, user_id, roles });
         setModalVisible(true);
       } else if (roles.includes('ADMIN')) {
+        // Tự động lưu role ADMIN vào localStorage
+        localStorage.setItem('user_role', 'ADMIN');
         void navigate('/admin/accounts');
       } else if (roles.includes('USER')) {
+        // Tự động lưu role USER vào localStorage
+        localStorage.setItem('user_role', 'USER');
         void navigate('/');
       }
     } catch (error: unknown) {

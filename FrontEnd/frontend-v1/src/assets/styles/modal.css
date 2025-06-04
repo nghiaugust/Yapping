@@ -1,0 +1,134 @@
+.fullscreen-modal .ant-modal,
+.fullscreen-modal .ant-modal-content,
+.fullscreen-modal .ant-modal-wrap,
+.fullscreen-modal .ant-modal-body {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+.fullscreen-modal .ant-modal-content {
+  box-shadow: none !important;
+}
+
+/* Style cho modal với nền đen */
+.threads-modal .ant-modal-content {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+}
+
+.threads-modal .ant-modal-body {
+  padding: 0 !important;
+  height: 90vh !important; /* Giảm chiều cao xuống 90% để không phải lăn chuột */
+}
+
+/* Nút đóng modal với màu trắng để dễ nhìn trên nền đen */
+.threads-modal .ant-modal-close {
+  color: #ffffff;
+}
+
+/* Style cho thanh cuộn ngang container media */
+/* Tùy chỉnh thanh cuộn cho Webkit (Chrome, Safari) */
+div[style*="overflow-x: auto"]::-webkit-scrollbar {
+  height: 4px;
+}
+
+div[style*="overflow-x: auto"]::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Ẩn thanh cuộn nhưng vẫn cho phép cuộn */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Microsoft Edge */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+}
+
+/* Style cho container có thể kéo/lướt ngang */
+.media-scroller {
+  user-select: none; /* Ngăn chọn text khi kéo */
+  -webkit-user-drag: none; /* Ngăn kéo mặc định trên Chrome/Safari */
+  touch-action: pan-x pinch-zoom; /* Cho phép vuốt ngang và zoom trên thiết bị cảm ứng */
+  cursor: grab; /* Luôn hiển thị cursor grab */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling trên iOS */
+  scroll-snap-type: x proximity; /* Snap vào các ảnh gần nhất */
+  overscroll-behavior-x: contain; /* Ngăn overscroll ảnh hưởng trang */
+}
+
+.media-scroller:active {
+  cursor: grabbing !important; /* Đổi con trỏ khi đang kéo */
+}
+
+/* Đảm bảo cursor grab hiển thị ngay cả khi hover vào ảnh */
+.media-scroller:hover {
+  cursor: grab;
+}
+
+/* Snap points cho các media items */
+.media-scroller > div {
+  scroll-snap-align: start;
+  flex-shrink: 0; /* Ngăn co lại kích thước */
+}
+
+/* Style cho hình ảnh và video trong scroller */
+.media-scroller img,
+.media-scroller video {
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: transform 0.2s ease;
+  cursor: grab; /* Đảm bảo cursor grab cả khi hover vào ảnh */
+  pointer-events: auto; /* Đảm bảo có thể tương tác */
+}
+
+/* Hiệu ứng hover cho media - giữ cursor grab */
+.media-scroller img:hover,
+.media-scroller video:hover {
+  transform: scale(1.02);
+  cursor: grab; /* Đảm bảo vẫn là cursor grab khi hover */
+}
+
+/* Style cho div chứa ảnh/video */
+.media-scroller > div {
+  cursor: grab !important; /* Đảm bảo cursor grab cho div chứa ảnh */
+  flex-shrink: 0; /* Ngăn co lại */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-scroller > div:hover {
+  cursor: grab !important;
+}
+
+/* Responsive media sizing */
+@media (max-width: 768px) {
+  .media-scroller {
+    gap: 6px !important; /* Giảm gap trên mobile */
+  }
+  
+  .media-scroller > div {
+    min-width: 200px; /* Kích thước tối thiểu trên mobile */
+  }
+}
+
+@media (min-width: 769px) {
+  .media-scroller > div {
+    min-width: 250px; /* Kích thước tối thiểu trên desktop */
+  }
+}

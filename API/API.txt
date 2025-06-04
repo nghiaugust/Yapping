@@ -129,7 +129,7 @@ json trả về
     "data": {
         "content": [
             {
-                "id": 8,
+                "id": 19,
                 "user": {
                     "id": 8,
                     "username": "nghia3",
@@ -137,96 +137,189 @@ json trả về
                     "profilePicture": "/uploads/profile-pictures/1747724495181_sach-khoa-hoc.png"
                 },
                 "parentPostId": null,
-                "content": "nội dung bài đăng ",
+                "content": "test media ",
                 "visibility": "PUBLIC",
-                "likeCount": null,
-                "commentCount": null,
-                "repostCount": null,
-                "quoteCount": null,
-                "createdAt": "2025-05-21T08:41:16Z",
-                "updatedAt": "2025-05-21T08:41:16Z",
-                "post_type": null,
-                "media": null
+                "likeCount": 1,
+                "commentCount": 0,
+                "repostCount": 0,
+                "quoteCount": 0,
+                "createdAt": "2025-05-29T19:10:13Z",
+                "updatedAt": "2025-05-30T10:28:29Z",
+                "post_type": "TEXT",
+                "media": [
+                    {
+                        "id": 17,
+                        "mediaUrl": "/uploads/media/8_1748545812549_yapping.png",
+                        "mediaType": "IMAGE",
+                        "sortOrder": 0,
+                        "createdAt": "2025-05-29T19:10:13Z"
+                    },
+                    {
+                        "id": 18,
+                        "mediaUrl": "/uploads/media/8_1748545812563_de3.jpg",
+                        "mediaType": "IMAGE",
+                        "sortOrder": 1,
+                        "createdAt": "2025-05-29T19:10:13Z"
+                    },
+                    {
+                        "id": 19,
+                        "mediaUrl": "/uploads/media/8_1748545812567_6652872862792.mp4",
+                        "mediaType": "VIDEO",
+                        "sortOrder": 2,
+                        "createdAt": "2025-05-29T19:10:13Z"
+                    },
+                    {
+                        "id": 20,
+                        "mediaUrl": "/uploads/media/8_1748545812573_ktvxld1.jpg",
+                        "mediaType": "IMAGE",
+                        "sortOrder": 3,
+                        "createdAt": "2025-05-29T19:10:13Z"
+                    }
+                ],
+                "resources": null
             },
             {
-                "id": 6,
+                "id": 18,
                 "user": {
-                    "id": 1,
-                    "username": "john_doe",
-                    "fullName": "John Doe",
-                    "profilePicture": null
+                    "id": 8,
+                    "username": "nghia3",
+                    "fullName": "Nghia",
+                    "profilePicture": "/uploads/profile-pictures/1747724495181_sach-khoa-hoc.png"
                 },
                 "parentPostId": null,
-                "content": "Updated content for my  post6!",
+                "content": "test media ",
                 "visibility": "PUBLIC",
-                "likeCount": null,
-                "commentCount": null,
-                "repostCount": null,
-                "quoteCount": null,
-                "createdAt": "2025-04-25T05:29:55Z",
-                "updatedAt": "2025-04-25T05:29:55Z",
-                "post_type": "RESOURCE",
-                "media": null
+                "likeCount": 1,
+                "commentCount": 0,
+                "repostCount": 0,
+                "quoteCount": 0,
+                "createdAt": "2025-05-29T19:00:47Z",
+                "updatedAt": "2025-06-02T06:14:38Z",
+                "post_type": "TEXT",
+                "media": [
+                    {
+                        "id": 14,
+                        "mediaUrl": "/uploads/media/8_1748545247174_yapping.png",
+                        "mediaType": "IMAGE",
+                        "sortOrder": 0,
+                        "createdAt": "2025-05-29T19:00:47Z"
+                    },
+                    {
+                        "id": 15,
+                        "mediaUrl": "/uploads/media/8_1748545247191_de3.jpg",
+                        "mediaType": "IMAGE",
+                        "sortOrder": 1,
+                        "createdAt": "2025-05-29T19:00:47Z"
+                    },
+                    {
+                        "id": 16,
+                        "mediaUrl": "/uploads/media/8_1748545247194_6652872862792.mp4",
+                        "mediaType": "VIDEO",
+                        "sortOrder": 2,
+                        "createdAt": "2025-05-29T19:00:47Z"
+                    }
+                ],
+                "resources": null
             },
             {
-                "id": 5,
+                "id": 17,
                 "user": {
-                    "id": 1,
-                    "username": "john_doe",
-                    "fullName": "John Doe",
-                    "profilePicture": null
+                    "id": 8,
+                    "username": "nghia3",
+                    "fullName": "Nghia",
+                    "profilePicture": "/uploads/profile-pictures/1747724495181_sach-khoa-hoc.png"
                 },
                 "parentPostId": null,
-                "content": "Updated content for my  post5!",
+                "content": "test media ",
                 "visibility": "PUBLIC",
-                "likeCount": null,
-                "commentCount": null,
-                "repostCount": null,
-                "quoteCount": null,
-                "createdAt": "2025-04-25T05:29:50Z",
-                "updatedAt": "2025-04-25T05:29:50Z",
-                "post_type": "RESOURCE",
-                "media": null
+                "likeCount": 0,
+                "commentCount": 0,
+                "repostCount": 0,
+                "quoteCount": 0,
+                "createdAt": "2025-05-29T18:39:46Z",
+                "updatedAt": "2025-05-29T18:39:46Z",
+                "post_type": "TEXT",
+                "media": [
+                    {
+                        "id": 11,
+                        "mediaUrl": "/uploads/media/8_1748543985845_yapping.png",
+                        "mediaType": "IMAGE",
+                        "sortOrder": 0,
+                        "createdAt": "2025-05-29T18:39:46Z"
+                    },
+                    {
+                        "id": 12,
+                        "mediaUrl": "/uploads/media/8_1748543985896_ChatGPT Image 22_56_58 2 thg 4, 2025.png",
+                        "mediaType": "IMAGE",
+                        "sortOrder": 1,
+                        "createdAt": "2025-05-29T18:39:46Z"
+                    },
+                    {
+                        "id": 13,
+                        "mediaUrl": "/uploads/media/8_1748543985914_de3.jpg",
+                        "mediaType": "IMAGE",
+                        "sortOrder": 2,
+                        "createdAt": "2025-05-29T18:39:46Z"
+                    }
+                ],
+                "resources": null
             },
             {
-                "id": 4,
+                "id": 16,
                 "user": {
-                    "id": 1,
-                    "username": "john_doe",
-                    "fullName": "John Doe",
-                    "profilePicture": null
+                    "id": 8,
+                    "username": "nghia3",
+                    "fullName": "Nghia",
+                    "profilePicture": "/uploads/profile-pictures/1747724495181_sach-khoa-hoc.png"
                 },
                 "parentPostId": null,
-                "content": "Updated content for my  post4!",
+                "content": "test media ",
                 "visibility": "PUBLIC",
-                "likeCount": null,
-                "commentCount": null,
-                "repostCount": null,
-                "quoteCount": null,
-                "createdAt": "2025-04-25T05:29:46Z",
-                "updatedAt": "2025-04-25T05:29:46Z",
-                "post_type": "RESOURCE",
-                "media": null
+                "likeCount": 0,
+                "commentCount": 0,
+                "repostCount": 0,
+                "quoteCount": 0,
+                "createdAt": "2025-05-29T17:48:26Z",
+                "updatedAt": "2025-05-29T17:48:26Z",
+                "post_type": "TEXT",
+                "media": [
+                    {
+                        "id": 9,
+                        "mediaUrl": "/uploads/media/8_1748540906399_yapping.png",
+                        "mediaType": "IMAGE",
+                        "sortOrder": 0,
+                        "createdAt": "2025-05-29T17:48:26Z"
+                    },
+                    {
+                        "id": 10,
+                        "mediaUrl": "/uploads/media/8_1748540906411_ChatGPT Image 22_56_58 2 thg 4, 2025.png",
+                        "mediaType": "IMAGE",
+                        "sortOrder": 1,
+                        "createdAt": "2025-05-29T17:48:26Z"
+                    }
+                ],
+                "resources": null
             },
             {
-                "id": 3,
+                "id": 15,
                 "user": {
-                    "id": 1,
-                    "username": "john_doe",
-                    "fullName": "John Doe",
-                    "profilePicture": null
+                    "id": 8,
+                    "username": "nghia3",
+                    "fullName": "Nghia",
+                    "profilePicture": "/uploads/profile-pictures/1747724495181_sach-khoa-hoc.png"
                 },
                 "parentPostId": null,
-                "content": "Updated content for my  post3!",
+                "content": "test thông báo và mention cho @nghia3",
                 "visibility": "PUBLIC",
-                "likeCount": null,
+                "likeCount": 2,
                 "commentCount": null,
                 "repostCount": null,
                 "quoteCount": null,
-                "createdAt": "2025-04-25T05:29:43Z",
-                "updatedAt": "2025-04-25T05:29:43Z",
-                "post_type": "RESOURCE",
-                "media": null
+                "createdAt": "2025-05-22T11:29:12Z",
+                "updatedAt": "2025-06-02T06:14:03Z",
+                "post_type": "TEXT",
+                "media": null,
+                "resources": null
             }
         ],
         "pageable": {
@@ -242,8 +335,8 @@ json trả về
             "unpaged": false
         },
         "last": false,
-        "totalElements": 7,
         "totalPages": 2,
+        "totalElements": 8,
         "size": 5,
         "number": 0,
         "sort": {

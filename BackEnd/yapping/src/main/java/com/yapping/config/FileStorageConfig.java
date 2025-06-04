@@ -12,35 +12,40 @@ import java.io.File;
 
 @Configuration
 public class FileStorageConfig implements WebMvcConfigurer {
-    
+
     @Value("${file.upload-dir}")
     private String uploadDir;
-    
+
     @Value("${file.media-dir:${file.upload-dir}/media}")
     private String mediaDir;
-    
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Đăng ký thư mục lưu trữ file để có thể truy cập từ bên ngoài
-        registry.addResourceHandler("/uploads/**")
+        // Đăng ký thư mục lưu trữ file ảnh đại diện
+        registry.addResourceHandler("/uploads/profile-pictures/**")
                 .addResourceLocations("file:" + uploadDir + "/");
-                
+
         // Đăng ký thư mục media
-        String mediaPath = mediaDir.startsWith("/") ? mediaDir : uploadDir + "/media";
         registry.addResourceHandler("/uploads/media/**")
-                .addResourceLocations("file:" + mediaPath + "/");
+                .addResourceLocations("file:" + mediaDir + "/");
     }
-    
+
     @Bean
     public MultipartResolver multipartResolver() {
         return new StandardServletMultipartResolver();
-    }
-      @Bean
+    }      @Bean
     public String createUploadDirectoryIfNotExists() {
+        // Tạo thư mục profile-pictures
         File directory = new File(uploadDir);
         if (!directory.exists()) {
             directory.mkdirs();
         }
+
+        // Tạo thư mục media
+        File mediaDirectory = new File(mediaDir);
+        if (!mediaDirectory.exists()) {
+            mediaDirectory.mkdirs();
+        }
+
         return uploadDir;
     }
 }

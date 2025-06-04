@@ -38,7 +38,7 @@ const Notifications: React.FC = () => {
       onOpenChange={(newVisible) => setVisible(newVisible)}
       placement="bottomRight"
     >
-      <BellOutlined style={{ fontSize: "30px", cursor: "pointer", color: "#000000" }} />
+      <BellOutlined style={{ fontSize: "24px", cursor: "pointer", color: "#ffffff" }} />
     </Popover>
   );
 };

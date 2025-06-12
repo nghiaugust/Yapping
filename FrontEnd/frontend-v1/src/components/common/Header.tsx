@@ -119,7 +119,7 @@ const Header: React.FC<HeaderProps> = ({ onRefreshContent }) => {
         onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#5AB9EA")}
       />      <Space size="large">
         <Notifications />
-        <Followers />
+        {currentUser && <Followers userId={currentUser.id} />}
         <Popover 
           content={<UserProfilePopover user={currentUser} loading={loading} onLogout={handleLogout} />}
           trigger="click"

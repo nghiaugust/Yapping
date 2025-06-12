@@ -360,6 +360,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public NotificationDTO getNotificationById(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new EntityNotFoundException("Thông báo không tồn tại với ID: " + notificationId));
@@ -368,6 +369,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<NotificationDTO> getNotificationsByUserId(Long userId) {
         List<Notification> notifications = notificationRepository.findByUserId(userId);
         return notifications.stream()
@@ -376,12 +378,14 @@ public class NotificationServiceImpl implements NotificationService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public Page<NotificationDTO> getNotificationsByUserId(Long userId, Pageable pageable) {
         Page<Notification> notificationPage = notificationRepository.findByUserId(userId, pageable);
         return notificationPage.map(this::convertToDTO);
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<NotificationDTO> getUnreadNotificationsByUserId(Long userId) {
         List<Notification> notifications = notificationRepository.findByUserIdAndIsReadFalse(userId);
         return notifications.stream()
@@ -390,6 +394,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public Page<NotificationDTO> getUnreadNotificationsByUserId(Long userId, Pageable pageable) {
         Page<Notification> notificationPage = notificationRepository.findByUserIdAndIsReadFalse(userId, pageable);
         return notificationPage.map(this::convertToDTO);
@@ -417,11 +422,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public long countUnreadNotificationsByUserId(Long userId) {
         return notificationRepository.countByUserIdAndIsReadFalse(userId);
     }
     
     @Override
+    @Transactional(readOnly = true)
     public Page<NotificationDTO> searchNotifications(
             Long userId,
             Type type,

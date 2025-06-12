@@ -1,10 +1,13 @@
-// src/pages/user/Home.tsx
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Typography, List, Card, Avatar, Space, Spin, Button, Empty, Pagination, Modal } from "antd";
-import { LikeOutlined, MessageOutlined, RetweetOutlined, EditOutlined, CloseOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { LikeOutlined, LikeFilled, MessageOutlined, RetweetOutlined, EditOutlined, CloseOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { getPublicPosts, likePost } from "../../service/user/postService";
+import { getUserLikes, deleteLike } from "../../service/user/likeService";
+import { getCurrentUser } from "../../service/user/userService";
 import { Post } from "../../types/post";
+import { Like } from "../../types/like";
 import { formatTimeAgo } from "../../utils/formatDate";
+import PostCommentsModal from "../../components/user/PostCommentsModal";
 import "../../assets/styles/modal.css";
 
 const { Title, Text, Paragraph } = Typography;
@@ -18,52 +21,104 @@ const Home: React.FC = () => {
     total: 0,
   });
   const [error, setError] = useState<string | null>(null);
-  // Thêm state cho modal xem media toàn màn hình và điều hướng
+  const [userLikes, setUserLikes] = useState<Like[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  // Modal states
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedMedia, setSelectedMedia] = useState<{ url: string; type: string } | null>(null);
-  const [currentPostMedia, setCurrentPostMedia] = useState<{id: number; mediaUrl: string; mediaType: string}[]>([]);
+  const [currentPostMedia, setCurrentPostMedia] = useState<{ id: number; mediaUrl: string; mediaType: string }[]>([]);
   const [currentMediaIndex, setCurrentMediaIndex] = useState<number>(0);
-  
-  // Định nghĩa các hàm xử lý media với useCallback để tránh vòng lặp phụ thuộc
+
+  // Comments modal states
+  const [commentsModalVisible, setCommentsModalVisible] = useState<boolean>(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+
+  // Modal handlers
   const handleCloseModal = useCallback(() => {
     setSelectedMedia(null);
     setModalVisible(false);
     setCurrentMediaIndex(0);
   }, []);
 
-  // Hàm chuyển đến media kế tiếp
   const handleNextMedia = useCallback(() => {
     if (currentMediaIndex < currentPostMedia.length - 1) {
       const nextIndex = currentMediaIndex + 1;
       const nextMedia = currentPostMedia[nextIndex];
       setCurrentMediaIndex(nextIndex);
-      setSelectedMedia({ 
-        url: nextMedia.mediaUrl, 
-        type: nextMedia.mediaType.toLowerCase() 
+      setSelectedMedia({
+        url: nextMedia.mediaUrl,
+        type: nextMedia.mediaType.toLowerCase()
       });
     }
   }, [currentMediaIndex, currentPostMedia]);
 
-  // Hàm chuyển đến media trước đó
   const handlePrevMedia = useCallback(() => {
     if (currentMediaIndex > 0) {
       const prevIndex = currentMediaIndex - 1;
       const prevMedia = currentPostMedia[prevIndex];
       setCurrentMediaIndex(prevIndex);
-      setSelectedMedia({ 
-        url: prevMedia.mediaUrl, 
-        type: prevMedia.mediaType.toLowerCase() 
+      setSelectedMedia({
+        url: prevMedia.mediaUrl,
+        type: prevMedia.mediaType.toLowerCase()
       });
     }
   }, [currentMediaIndex, currentPostMedia]);
 
-  // Sử dụng useCallback để tránh tạo lại hàm fetchPosts khi component render
+  // Fetch posts  // Fetch user likes when component mounts
+  const fetchUserLikes = useCallback(async (userId: number) => {
+    try {
+      const likesResponse = await getUserLikes(userId);
+      if (likesResponse.success) {
+        setUserLikes(likesResponse.data.content);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách lượt thích:", error);
+    }
+  }, []);
+
+  // Fetch current user info on mount
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const userResponse = await getCurrentUser();
+        if (userResponse.success) {
+          setCurrentUserId(userResponse.data.id);
+          await fetchUserLikes(userResponse.data.id);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
+      }
+    };
+
+    void fetchCurrentUser();
+  }, [fetchUserLikes]);
+
+  // Update posts with like status based on userLikes
+  useEffect(() => {
+    if (userLikes.length > 0 && posts.length > 0) {
+      const likedPostIds = new Set(
+        userLikes
+          .filter(like => like.targetType === "POST")
+          .map(like => like.targetId)
+      );
+
+      setPosts(prevPosts => 
+        prevPosts.map(post => ({
+          ...post,
+          isLiked: likedPostIds.has(post.id)
+        }))
+      );
+    }
+  }, [userLikes, posts.length]);
+
   const fetchPosts = useCallback(async (page = 0) => {
     try {
       setLoading(true);
       const response = await getPublicPosts(page, pagination.pageSize);
       if (response.success) {
         console.log("Dữ liệu bài đăng nhận được:", response.data.content);
+        
+        // Set posts first, the useEffect above will update with like status
         setPosts(response.data.content);
         setPagination({
           current: response.data.pageable.pageNumber,
@@ -80,13 +135,13 @@ const Home: React.FC = () => {
       setLoading(false);
     }
   }, [pagination.pageSize]);
-  
+
   useEffect(() => {
     void fetchPosts();
   }, [fetchPosts]);
-    // Thêm effect để debug các bài đăng có media
+
+  // Debug posts with media
   useEffect(() => {
-    // Log các bài đăng có media để kiểm tra
     const postsWithMedia = posts.filter(post => post.media && post.media.length > 0);
     if (postsWithMedia.length > 0) {
       console.log("Các bài đăng có media:", postsWithMedia);
@@ -94,11 +149,11 @@ const Home: React.FC = () => {
       console.log("Không có bài đăng nào có media");
     }
   }, [posts]);
-  // Xử lý phím tắt trong modal
+
+  // Keyboard navigation in modal
   useEffect(() => {
-    // Chỉ xử lý phím tắt khi modal hiển thị
     if (!modalVisible) return;
-    
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         handleCloseModal();
@@ -108,259 +163,259 @@ const Home: React.FC = () => {
         handlePrevMedia();
       }
     };
-    
-    document.addEventListener("keydown", handleKeyDown);
-    
-    // Cleanup listener khi component unmount hoặc modal đóng
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [modalVisible, handleCloseModal, handleNextMedia, handlePrevMedia]);  // Cleanup tất cả event listeners khi component unmount
-  useEffect(() => {
-    const currentCleanupRefs = cleanupRefs.current; // Copy reference trong effect
-    return () => {
-      currentCleanupRefs.forEach((cleanup) => cleanup());
-      currentCleanupRefs.clear();
-    };
-  }, []);
 
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [modalVisible, handleCloseModal, handleNextMedia, handlePrevMedia]);  // Handle like post
   const handleLikePost = async (postId: number) => {
+    if (!currentUserId) {
+      console.error("User ID không tồn tại");
+      return;
+    }
+
     try {
-      const response = await likePost(postId);
-      if (response.success) {
-        // Cập nhật lại danh sách bài đăng sau khi like
-        void fetchPosts(pagination.current);
+      // Check current like status
+      const isCurrentlyLiked = userLikes.some(like => 
+        like.targetType === "POST" && like.targetId === postId
+      );
+
+      // Optimistic update - cập nhật UI ngay lập tức
+      setPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.id === postId 
+            ? {
+                ...post,
+                isLiked: !post.isLiked,
+                likeCount: post.isLiked 
+                  ? (post.likeCount ?? 0) - 1 
+                  : (post.likeCount ?? 0) + 1
+              }
+            : post
+        )
+      );
+
+      // Cập nhật userLikes state
+      setUserLikes(prevLikes => {
+        if (isCurrentlyLiked) {
+          // Remove like
+          return prevLikes.filter(like => 
+            !(like.targetType === "POST" && like.targetId === postId)
+          );
+        } else {
+          // Add like (tạo object like giả để cập nhật state)
+          const newLike: Like = {
+            id: Date.now(), // temporary ID
+            userId: currentUserId,
+            username: "", // sẽ được cập nhật từ API nếu cần
+            userFullName: "",
+            userProfilePicture: null,
+            targetType: "POST",
+            targetId: postId,
+            createdAt: new Date().toISOString()
+          };
+          return [newLike, ...prevLikes];
+        }
+      });
+
+      let response;
+      if (isCurrentlyLiked) {
+        // Find the like ID to delete
+        const likeToDelete = userLikes.find(like => 
+          like.targetType === "POST" && like.targetId === postId
+        );
+        if (likeToDelete) {
+          response = await deleteLike(likeToDelete.id);
+        } else {
+          throw new Error("Không tìm thấy like để xóa");
+        }
+      } else {
+        // Create new like
+        response = await likePost(postId);
+      }
+
+      if (!response.success) {
+        // Nếu API call thất bại, revert lại thay đổi
+        setPosts(prevPosts => 
+          prevPosts.map(post => 
+            post.id === postId 
+              ? {
+                  ...post,
+                  isLiked: !post.isLiked,
+                  likeCount: post.isLiked 
+                    ? (post.likeCount ?? 0) + 1 
+                    : (post.likeCount ?? 0) - 1
+                }
+              : post
+          )
+        );
+
+        // Revert userLikes state
+        setUserLikes(prevLikes => {
+          const wasLiked = prevLikes.some(like => 
+            like.targetType === "POST" && like.targetId === postId
+          );
+
+          if (wasLiked) {
+            return prevLikes.filter(like => 
+              !(like.targetType === "POST" && like.targetId === postId)
+            );
+          } else {
+            const newLike: Like = {
+              id: Date.now(),
+              userId: currentUserId,
+              username: "",
+              userFullName: "",
+              userProfilePicture: null,
+              targetType: "POST",
+              targetId: postId,
+              createdAt: new Date().toISOString()
+            };
+            return [newLike, ...prevLikes];
+          }
+        });
+
+        console.error("Lỗi khi thích bài đăng");
       }
     } catch (err) {
       console.error("Lỗi khi thích bài đăng:", err);
+      // Revert lại thay đổi khi có lỗi
+      setPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.id === postId 
+            ? {
+                ...post,
+                isLiked: !post.isLiked,
+                likeCount: post.isLiked 
+                  ? (post.likeCount ?? 0) + 1 
+                  : (post.likeCount ?? 0) - 1
+              }
+            : post
+        )
+      );
+
+      // Revert userLikes state
+      setUserLikes(prevLikes => {
+        const wasLiked = prevLikes.some(like => 
+          like.targetType === "POST" && like.targetId === postId
+        );
+
+        if (wasLiked) {
+          return prevLikes.filter(like => 
+            !(like.targetType === "POST" && like.targetId === postId)
+          );
+        } else {
+          const newLike: Like = {
+            id: Date.now(),
+            userId: currentUserId,
+            username: "",
+            userFullName: "",
+            userProfilePicture: null,
+            targetType: "POST",
+            targetId: postId,
+            createdAt: new Date().toISOString()
+          };
+          return [newLike, ...prevLikes];
+        }
+      });
     }
   };
+
+  // Handle comments modal
+  const handleOpenCommentsModal = (post: Post) => {
+    setSelectedPost(post);
+    setCommentsModalVisible(true);
+  };
+
+  const handleCloseCommentsModal = () => {
+    setCommentsModalVisible(false);
+    setSelectedPost(null);
+  };
+
+  const handlePostUpdate = (updatedPost: Post) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === updatedPost.id ? updatedPost : post
+      )
+    );
+  };
+
+  // Handle pagination
   const handlePageChange = (page: number) => {
-    void fetchPosts(page - 1); // API sử dụng page bắt đầu từ 0
-  };  // Hàm mở modal xem media
-  const handleOpenMediaModal = useCallback((media: { url: string; type: string }, postMedia: {id: number; mediaUrl: string; mediaType: string}[], index: number) => {
+    void fetchPosts(page - 1);
+  };
+
+  // Open media modal
+  const handleOpenMediaModal = useCallback((media: { url: string; type: string }, postMedia: { id: number; mediaUrl: string; mediaType: string }[], index: number) => {
     setSelectedMedia(media);
     setCurrentPostMedia(postMedia);
     setCurrentMediaIndex(index);
     setModalVisible(true);
   }, []);
 
-  // Hàm xử lý click media với kiểm tra drag
+  // Simple media click without drag interference
   const handleMediaClick = useCallback((
-    e: React.MouseEvent,
-    media: { url: string; type: string }, 
-    postMedia: {id: number; mediaUrl: string; mediaType: string}[], 
+    media: { url: string; type: string },
+    postMedia: { id: number; mediaUrl: string; mediaType: string }[],
     index: number
   ) => {
-    // Kiểm tra xem có đang trong quá trình drag không
-    const target = e.currentTarget as HTMLElement;
-    const scroller = target.closest('.media-scroller') as HTMLElement;
-    
-    if (scroller && scroller.style.cursor === 'grabbing') {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-    
     handleOpenMediaModal(media, postMedia, index);
-  }, [handleOpenMediaModal]);// useRef để lưu cleanup function
-  const cleanupRefs = useRef<Map<HTMLDivElement, () => void>>(new Map());  // Hàm tối ưu để xử lý horizontal scrolling như Threads
-  const setupMediaScroller = useCallback((element: HTMLDivElement) => {
-    if (!element) return;
-    if (element.scrollWidth <= element.clientWidth) {
-      element.style.overflowX = 'hidden';
-      return;
-    }
+  }, [handleOpenMediaModal]);
 
-    // Cấu hình CSS
-    element.style.scrollBehavior = 'auto';
-    element.style.touchAction = 'pan-x';
-    element.style.overflowX = 'auto';
-    element.style.overflowY = 'hidden';
-    element.style.cursor = 'grab';
-    element.style.userSelect = 'none';
-    element.style.WebkitUserDrag = 'none';
-    element.style.WebkitOverflowScrolling = 'touch';
-    element.style.scrollSnapType = 'x proximity';
-    element.style.scrollPadding = '8px';
-    element.classList.add('media-scroller', 'hide-scrollbar');
-    element.tabIndex = 0;
-
-    let isDragging = false;
-    let startX = 0;
-    let scrollLeft = 0;
-    let hasMoved = false;
-    const MOVEMENT_THRESHOLD = 5; // Ngưỡng 5px
-
-    const handleMouseDown = (e: MouseEvent) => {
-      if (e.button !== 0) return;
-      isDragging = true;
-      hasMoved = false;
-      startX = e.pageX - element.offsetLeft;
-      scrollLeft = element.scrollLeft;
-      element.style.cursor = 'grabbing';
-      document.body.style.cursor = 'grabbing';
-      element.classList.add('dragging');
-      element.style.scrollBehavior = 'auto';
-      element.style.scrollSnapType = 'none';
-      e.preventDefault();
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const x = e.pageX - element.offsetLeft;
-      const walkX = (x - startX) * 1.5;
-      if (Math.abs(x - startX) > MOVEMENT_THRESHOLD) {
-        hasMoved = true;
-      }
-      const newScrollLeft = scrollLeft - walkX;
-      const maxScrollLeft = element.scrollWidth - element.clientWidth;
-      element.scrollLeft = Math.max(0, Math.min(newScrollLeft, maxScrollLeft));
-    };
-
-    const handleMouseUp = () => {
-      if (!isDragging) return;
-      isDragging = false;
-      element.style.cursor = 'grab';
-      document.body.style.cursor = '';
-      element.classList.remove('dragging');
-      element.style.scrollBehavior = 'smooth';
-      element.style.scrollSnapType = 'x proximity';
-      hasMoved = false;
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-      isDragging = true;
-      hasMoved = false;
-      startX = e.touches[0].pageX - element.offsetLeft;
-      scrollLeft = element.scrollLeft;
-      element.style.scrollBehavior = 'auto';
-      element.style.scrollSnapType = 'none';
-      element.classList.add('dragging');
-      if (e.cancelable) {
-        e.preventDefault();
-      }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging) return;
-      const x = e.touches[0].pageX - element.offsetLeft;
-      const walkX = (x - startX) * 1.2;
-      if (Math.abs(x - startX) > MOVEMENT_THRESHOLD) {
-        hasMoved = true;
-      }
-      const newScrollLeft = scrollLeft - walkX;
-      const maxScrollLeft = element.scrollWidth - element.clientWidth;
-      element.scrollLeft = Math.max(0, Math.min(newScrollLeft, maxScrollLeft));
-      if (e.cancelable) {
-        e.preventDefault();
-      }
-    };
-
-    const handleTouchEnd = () => {
-      if (!isDragging) return;
-      isDragging = false;
-      element.classList.remove('dragging');
-      element.style.scrollBehavior = 'smooth';
-      element.style.scrollSnapType = 'x proximity';
-      hasMoved = false;
-    };
-
-    const handleClick = (e: Event) => {
-      if (hasMoved) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        hasMoved = false;
-        return false;
-      }
-    };
-
-    // Gắn sự kiện vào document
-    document.addEventListener('mousemove', handleMouseMove, { passive: false });
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd);
-    element.addEventListener('click', handleClick, { capture: true });
-
-    // Ngăn drag mặc định của hình ảnh
-    const images = element.querySelectorAll('img');
-    images.forEach(img => {
-      img.addEventListener('dragstart', (e) => e.preventDefault());
-    });
-
-    // Xử lý phím bấm
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (document.activeElement === element || element.contains(document.activeElement)) {
-        const itemWidth = element.children[1]?.getBoundingClientRect().width || 200;
-        if (e.key === 'ArrowLeft') {
-          element.scrollBy({ left: -itemWidth, behavior: 'smooth' });
-          e.preventDefault();
-        } else if (e.key === 'ArrowRight') {
-          element.scrollBy({ left: itemWidth, behavior: 'smooth' });
-          e.preventDefault();
+  // Add this useEffect to inject CSS once
+  useEffect(() => {
+    const styleId = 'media-scroll-styles';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        .simple-scroll::-webkit-scrollbar {
+          height: 10px;
         }
-      }
-    };
-
-    element.addEventListener('keydown', handleKeyDown);
-    element.addEventListener('focus', () => {
-      element.style.outline = 'none';
-      element.style.boxShadow = '0 0 0 2px rgba(24, 144, 255, 0.3)';
-    });
-    element.addEventListener('blur', () => {
-      element.style.boxShadow = 'none';
-    });
-
-    // Cleanup
-    const cleanup = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-      element.removeEventListener('click', handleClick);
-      element.removeEventListener('keydown', handleKeyDown);
-      element.removeEventListener('focus', () => {});
-      element.removeEventListener('blur', () => {});
-      const imgs = element.querySelectorAll('img');
-      imgs.forEach(img => {
-        img.removeEventListener('dragstart', (e) => e.preventDefault());
-      });
-      cleanupRefs.current.delete(element);
-    };
-
-    cleanupRefs.current.set(element, cleanup);
-    return cleanup;
+        .simple-scroll::-webkit-scrollbar-track {
+          background: #f1f1f1;
+        }
+        .simple-scroll::-webkit-scrollbar-thumb {
+          background: #ccc;
+          border-radius: 5px;
+        }
+        .simple-scroll::-webkit-scrollbar-thumb:hover {
+          background: #999;
+        }
+      `;
+      document.head.appendChild(style);
+    }
   }, []);
 
-  return (    
+  return (
     <>
-      <div style={{ 
-        position: "sticky", 
-        top: 0, 
+      {/* Header */}
+      <div style={{
+        position: "sticky",
+        top: 0,
         zIndex: 10,
         background: "white",
         padding: "10px",
         borderBottom: "1px solid #8860D0",
-        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",// đổ bóng
+        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
       }}>
         <Title level={2} style={{ color: "#5680E9", marginBottom: "0" }}>
           Dòng Thời Gian
         </Title>
-      </div>        <div style={{ 
-        overflowY: "auto", 
+      </div>
+
+      {/* Content */}
+      <div style={{
+        overflowY: "auto",
         maxHeight: "calc(100vh - 130px)",
         paddingBottom: "10px",
-        touchAction: "manipulation", // Cho phép trình duyệt tối ưu tương tác
-        WebkitOverflowScrolling: "touch" // Cuộn mượt trên iOS
+        touchAction: "manipulation",
+        WebkitOverflowScrolling: "touch"
       }}>
         {loading ? (
           <div style={{ textAlign: "center", padding: "40px 0" }}>
             <Spin size="large" tip="Đang tải bài đăng..." />
-          </div>      ) : error ? (
+          </div>
+        ) : error ? (
           <div style={{ textAlign: "center", padding: "20px 0" }}>
             <Text type="danger">{error}</Text>
             <Button onClick={() => { void fetchPosts(); }} style={{ marginTop: 10 }}>
@@ -370,171 +425,209 @@ const Home: React.FC = () => {
         ) : posts.length === 0 ? (
           <Empty description="Không có bài đăng nào" />
         ) : (
-          <>          <List
-            dataSource={posts}
-            renderItem={(post) => (
-              <List.Item style={{ padding: 0, marginBottom: "0" }}>                <Card                  style={{
-                    width: "100%",
-                    borderRadius: "0px",
-                    background: "#ffffff", 
-                    borderBottom: "1px #808080",
-                    transition: "all 0.3s",
-                    boxShadow: "none"
-                  }}
-                  hoverable
-                >
-                  <div style={{ display: "flex", alignItems: "flex-start" }}>
-                    <Avatar 
-                      src={post.user.profilePicture ? `http://localhost:8080/yapping${post.user.profilePicture}` : null} 
-                      size={40}
-                      style={{ marginRight: 12 }}
-                    >
-                      {!post.user.profilePicture && post.user.fullName.charAt(0).toUpperCase()}
-                    </Avatar>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <div>                          <Text strong style={{ color: "#8860D0" }}>
-                            {post.user.fullName}
-                          </Text><Text type="secondary" style={{ marginLeft: "8px" }}>
-                            @{post.user.username}
-                          </Text>
-                        </div>
-                        <Text type="secondary">{formatTimeAgo(post.createdAt)}</Text>
-                      </div>
-                      
-                      <Paragraph 
-                        style={{ 
-                          color: "#333", 
-                          margin: "12px 0",
-                          whiteSpace: "pre-wrap"  
-                        }}
+          <>
+            <List
+              dataSource={posts}
+              renderItem={(post) => (
+                <List.Item style={{ padding: 0, marginBottom: "0" }}>
+                  <Card
+                    style={{
+                      width: "100%",
+                      borderRadius: "0px",
+                      background: "#ffffff",
+                      borderBottom: "1px #808080",
+                      transition: "all 0.3s",
+                      boxShadow: "none",
+                      overflow: "visible"
+                    }}
+                    hoverable
+                  >
+                    <div style={{ display: "flex", alignItems: "flex-start" }}>
+                      <Avatar
+                        src={post.user.profilePicture ? `http://localhost:8080/yapping${post.user.profilePicture}` : null}
+                        size={40}
+                        style={{ marginRight: 12 }}
                       >
-                        {post.content}                      </Paragraph>                        {post.media && post.media.length > 0 && (                        <div 
-                          className="media-scroller hide-scrollbar"
-                          ref={setupMediaScroller}
-                          style={{
-                            display: 'flex',
-                            gap: '8px',
-                            margin: '10px 0',
-                            maxWidth: '100%',
-                            borderRadius: '8px',
-                            overflow: 'auto',
-                            touchAction: 'pan-x', // Chỉ cho phép cuộn ngang
-                            WebkitOverflowScrolling: 'touch', // Cuộn mượt trên iOS
-                            scrollSnapType: 'x mandatory', // Thêm snap mạnh hơn để người dùng cảm thấy ảnh "đóng khung"
-                            position: 'relative',
-                            cursor: 'grab',
-                            padding: '4px', // Thêm padding để dễ thấy là có thể cuộn
-                            backgroundColor: 'rgba(0,0,0,0.02)', // Thêm màu nền nhẹ để phân biệt khu vực cuộn
-                            borderRadius: '12px'
-                          }}
-                        >                          {post.media.map((media, index) => (
-                            <div 
-                              key={media.id}
-                              onClick={(e) => handleMediaClick(
-                                e,
-                                {url: media.mediaUrl, type: media.mediaType.toLowerCase()},
-                                post.media ?? [],
-                                index
-                              )}
-                              style={{
-                                minWidth: '200px',
-                                height: '250px',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                flexShrink: 0
-                              }}
-                            >
-                              {media.mediaType.toLowerCase() === 'image' ? (
-                                <img 
-                                  src={`http://localhost:8080/yapping${media.mediaUrl}`} 
-                                  alt="Media content" 
-                                  style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover'
-                                  }}
-                                />
-                              ) : media.mediaType.toLowerCase() === 'video' ? (
-                                <video 
-                                  src={`http://localhost:8080/yapping${media.mediaUrl}`}
-                                  preload="metadata"
-                                  style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover'
-                                  }}
-                                />
-                              ) : null}
-                            </div>
-                          ))}
+                        {!post.user.profilePicture && post.user.fullName.charAt(0).toUpperCase()}
+                      </Avatar>
+
+                      <div style={{
+                        flex: 1,
+                        overflow: "visible",
+                        minWidth: 0
+                      }}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div>
+                            <Text strong style={{ color: "#8860D0" }}>
+                              {post.user.fullName}
+                            </Text>
+                            <Text type="secondary" style={{ marginLeft: "8px" }}>
+                              @{post.user.username}
+                            </Text>
+                          </div>
+                          <Text type="secondary">{formatTimeAgo(post.createdAt)}</Text>
                         </div>
-                      )}
-                      
-                      <Space size="large">                        <Button 
-                          type="text" 
-                          icon={<LikeOutlined />} 
-                          onClick={() => { void handleLikePost(post.id); }}
+
+                        <Paragraph
+                          style={{
+                            color: "#333",
+                            margin: "12px 0",
+                            whiteSpace: "pre-wrap"
+                          }}
                         >
-                          {post.likeCount ?? 0}
-                        </Button>
-                        <Button type="text" icon={<MessageOutlined />}>
-                          {post.commentCount ?? 0}
-                        </Button>                        <Button type="text" icon={<RetweetOutlined />}>
-                          {post.repostCount ?? 0}
-                        </Button>
-                        <Button type="text" icon={<EditOutlined />}>
-                          {post.quoteCount ?? 0}
-                        </Button>
-                      </Space>
+                          {post.content}
+                        </Paragraph>
+
+                        {post.media && post.media.length > 0 && (
+                          <div style={{
+                            overflowX: 'auto',
+                            overflowY: 'hidden',
+                            margin: '10px 0',
+                            paddingBottom: '8px'
+                          }}>
+                            <div style={{
+                              display: 'flex',
+                              gap: '8px',
+                              width: 'max-content'
+                            }}>
+                              {post.media.map((media, index) => (
+                                <div
+                                  key={media.id}
+                                  onClick={() => handleMediaClick(
+                                    { url: media.mediaUrl, type: media.mediaType.toLowerCase() },
+                                    post.media ?? [],
+                                    index
+                                  )}
+                                  style={{
+                                    width: '120px',
+                                    height: '150px',
+                                    borderRadius: '8px',
+                                    overflow: 'hidden',
+                                    cursor: 'pointer',
+                                    border: '1px solid #ddd',
+                                    flexShrink: 0,
+                                    position: 'relative'
+                                  }}
+                                >
+                                  {media.mediaType.toLowerCase() === 'image' ? (
+                                    <img
+                                      src={`http://localhost:8080/yapping${media.mediaUrl}`}
+                                      alt="Media content"
+                                      style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
+                                      }}
+                                      draggable={false}
+                                    />
+                                  ) : media.mediaType.toLowerCase() === 'video' ? (
+                                    <>
+                                      <video
+                                        src={`http://localhost:8080/yapping${media.mediaUrl}`}
+                                        style={{
+                                          width: '100%',
+                                          height: '100%',
+                                          objectFit: 'cover'
+                                        }}
+                                        preload="metadata"
+                                      />
+                                      <div style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        backgroundColor: 'rgba(0,0,0,0.7)',
+                                        borderRadius: '50%',
+                                        width: '30px',
+                                        height: '30px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        fontSize: '12px',
+                                        pointerEvents: 'none'
+                                      }}>
+                                        ▶
+                                      </div>
+                                    </>
+                                  ) : null}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}                        <Space size="large">
+                          <Button
+                            type="text"
+                            icon={post.isLiked ? <LikeFilled style={{ color: '#ff4d4f' }} /> : <LikeOutlined />}
+                            onClick={() => { void handleLikePost(post.id); }}
+                            style={post.isLiked ? { color: '#ff4d4f' } : {}}
+                          >
+                            {post.likeCount ?? 0}
+                          </Button><Button type="text" icon={<MessageOutlined />}
+                            onClick={() => handleOpenCommentsModal(post)}
+                          >
+                            {post.commentCount ?? 0}
+                          </Button>
+                          <Button type="text" icon={<RetweetOutlined />}>
+                            {post.repostCount ?? 0}
+                          </Button>
+                          <Button type="text" icon={<EditOutlined />}>
+                            {post.quoteCount ?? 0}
+                          </Button>
+                        </Space>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              </List.Item>
-            )}
-          />
-            <div style={{ textAlign: "center", margin: "10px 0" }}>
-            <Pagination
-              current={pagination.current + 1} // +1 vì API bắt đầu từ 0
-              pageSize={pagination.pageSize}
-              total={pagination.total}
-              onChange={handlePageChange}
-              showSizeChanger={false}
+                  </Card>
+                </List.Item>
+              )}
             />
-          </div>
-        </>
-      )}
-      </div>      {/* Modal xem media toàn màn hình */}      <Modal
+
+            <div style={{ textAlign: "center", margin: "10px 0" }}>
+              <Pagination
+                current={pagination.current + 1}
+                pageSize={pagination.pageSize}
+                total={pagination.total}
+                onChange={handlePageChange}
+                showSizeChanger={false}
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      <Modal
         open={modalVisible}
         footer={null}
         onCancel={handleCloseModal}
         closeIcon={<CloseOutlined />}
         centered={true}
-        width="100%"        bodyStyle={{ 
+        width="100%"
+        bodyStyle={{
           padding: 0,
-          height: "100%", // Thay đổi từ 100vh thành 100% để phù hợp với container
+          height: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}style={{ 
+        }}
+        style={{
           padding: 0,
           margin: 0,
-          maxWidth: "95vw", // Giảm chiều rộng xuống 95% để có khoảng trống hai bên
-          maxHeight: "90vh", // Giảm chiều cao xuống 90% để không phải lăn chuột
+          maxWidth: "95vw",
+          maxHeight: "90vh",
         }}
-        wrapClassName="threads-modal"        
-        mask={true}      >
+        wrapClassName="threads-modal"
+        mask={true}
+      >
         {selectedMedia && (
-          <div style={{ 
-            width: "100%", 
-            height: "100%", 
+          <div style={{
+            width: "100%",
+            height: "100%",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             position: "relative"
           }}>
-            {/* Navigation arrows */}
             {currentMediaIndex > 0 && (
               <Button
                 type="text"
@@ -558,7 +651,7 @@ const Home: React.FC = () => {
                 }}
               />
             )}
-            
+
             {currentMediaIndex < currentPostMedia.length - 1 && (
               <Button
                 type="text"
@@ -582,17 +675,16 @@ const Home: React.FC = () => {
                 }}
               />
             )}
-            
-            {/* Media content */}
-            <div style={{ 
-              maxWidth: "90%", 
+
+            <div style={{
+              maxWidth: "90%",
               maxHeight: "90%",
               display: "flex",
               alignItems: "center",
               justifyContent: "center"
             }}>
               {selectedMedia.type === "image" ? (
-                <img 
+                <img
                   src={`http://localhost:8080/yapping${selectedMedia.url}`}
                   alt="Full media"
                   style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain" }}
@@ -606,8 +698,7 @@ const Home: React.FC = () => {
                 />
               ) : null}
             </div>
-            
-            {/* Page indicator */}
+
             <div style={{
               position: "absolute",
               bottom: "20px",
@@ -627,8 +718,15 @@ const Home: React.FC = () => {
               ))}
             </div>
           </div>
-        )}
-      </Modal>
+        )}      </Modal>
+
+      {/* Comments Modal */}
+      <PostCommentsModal
+        visible={commentsModalVisible}
+        post={selectedPost}
+        onClose={handleCloseCommentsModal}
+        onPostUpdate={handlePostUpdate}
+      />
     </>
   );
 };

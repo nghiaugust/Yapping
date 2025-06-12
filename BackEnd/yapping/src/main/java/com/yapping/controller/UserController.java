@@ -44,7 +44,8 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or authentication.details['claims']['userId'] == #id")
+    //@PreAuthorize("hasRole('ADMIN') or authentication.details['claims']['userId'] == #id")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getUser(@PathVariable Long id) {
         UserDTO user = userService.findOneUser(id);

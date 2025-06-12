@@ -136,6 +136,13 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<PostDTO> getPostsByUserId(Long userId, Pageable pageable) {
+        return postRepository.getPostsByUserId(userId, pageable)
+                .map(this::toPostDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<PostDTO> getPostById(Long id, Long userId) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found with id: " + id));

@@ -1,19 +1,17 @@
 // src/service/user/postService.ts
 import api from '../admin/api';
-import { Post, PostPageResponse } from '../../types/post';
-
-interface ApiResponse<T> {
-  status: number;
-  success: boolean;
-  message: string;
-  data: T;
-}
+import { Post, PostPageResponse, ApiResponse } from '../../types';
 
 export interface CreatePostRequest {
   content: string;
   visibility?: 'PUBLIC' | 'FOLLOWERS_ONLY' | 'PRIVATE';
   parentPostId?: number;
   post_type: 'TEXT' | 'RESOURCE';
+}
+
+export interface UpdatePostRequest {
+  content?: string;
+  visibility?: 'PUBLIC' | 'FOLLOWERS_ONLY' | 'PRIVATE';
 }
 
 export interface CreatePostWithMediaData {
@@ -150,6 +148,68 @@ export const createPostWithResource = async (postData: CreatePostWithResourceDat
     return response.data;
   } catch (error) {
     console.error('Error creating post with resource:', error);
+    throw error;
+  }
+};
+
+/**
+ * Cập nhật bài đăng
+ * @param postId ID của bài đăng cần cập nhật
+ * @param postData Dữ liệu cập nhật
+ * @returns Promise với dữ liệu bài đăng đã cập nhật
+ */
+export const updatePost = async (postId: number, postData: UpdatePostRequest): Promise<ApiResponse<Post>> => {
+  try {
+    const response = await api.put<ApiResponse<Post>>(`/posts/${postId}`, postData);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating post ${postId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Xóa bài đăng
+ * @param postId ID của bài đăng cần xóa
+ * @returns Promise với response thành công
+ */
+export const deletePost = async (postId: number): Promise<ApiResponse<null>> => {
+  try {
+    const response = await api.delete<ApiResponse<null>>(`/posts/${postId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting post ${postId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Unlike một bài đăng
+ * @param postId ID của bài đăng cần unlike
+ * @returns Promise với dữ liệu bài đăng sau khi đã unlike
+ */
+export const unlikePost = async (postId: number): Promise<ApiResponse<Post>> => {
+  try {
+    const response = await api.delete<ApiResponse<Post>>(`/posts/${postId}/like`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error unliking post ${postId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Lấy feed bài đăng của người dùng đang theo dõi
+ * @param page Số trang (bắt đầu từ 0)
+ * @param size Số lượng bài đăng trên mỗi trang
+ * @returns Promise với dữ liệu feed phân trang
+ */
+export const getFeedPosts = async (page = 0, size = 20): Promise<ApiResponse<PostPageResponse>> => {
+  try {
+    const response = await api.get<ApiResponse<PostPageResponse>>(`/posts/feed?page=${page}&size=${size}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching feed posts:', error);
     throw error;
   }
 };

@@ -1,15 +1,12 @@
 // src/pages/admin/AccountManagement.tsx
-import { Table, Typography, Button, Popconfirm, message, Tag } from 'antd';
-import { useState, useEffect } from 'react';
+import { Table, Button, Popconfirm, message, Tag } from 'antd';
+import { useState, useEffect, useCallback } from 'react';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import AccountDetailModal from '../../components/admin/AccountDetailModal';
-import CreateAccountModal from '../../components/admin/CreateAccountModal';
-import { getUsers, deleteUser } from '../../service/admin/userService';
+import AccountDetailModal from '../../components/admin/account/AccountDetailModal';
+import CreateAccountModal from '../../components/admin/account/CreateAccountModal';
+import * as adminUserService from '../../service/admin/userService';
 import { User, Role } from '../../types/user';
-import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-
-const { Title } = Typography;
 
 interface ApiErrorResponse {
   type?: string;
@@ -25,15 +22,33 @@ const AccountManagement: React.FC = () => {
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<User | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 
   // Lấy danh sách tài khoản
-  const fetchUsers = async (): Promise<void> => {
+  const fetchUsers = useCallback(async (): Promise<void> => {
     setLoading(true);
     try {
-      const users = await getUsers();
-      setData(users);
+      const users = await adminUserService.getUsers();
+      console.log('Fetched users:', users);
+      
+      // Đảm bảo users là một array và có dữ liệu hợp lệ
+      if (Array.isArray(users)) {
+        const validUsers = users.filter(user => 
+          user && 
+          typeof user === 'object' && 
+          typeof user.id === 'number' && 
+          typeof user.username === 'string' && 
+          typeof user.email === 'string'
+        );
+        console.log('Valid users:', validUsers);
+        setData(validUsers);
+      } else {
+        console.error('Users is not an array:', users);
+        setData([]);
+      }
     } catch (error: unknown) {
+      console.error('Error fetching users:', error);
       const errorResponse: ApiErrorResponse = (error as { response?: { data?: ApiErrorResponse } }).response?.data ?? { status: 0 };
       const errorMessage = errorResponse.detail ?? errorResponse.title ?? 'Lỗi không xác định';
       if (errorResponse.status === 401) {
@@ -42,24 +57,28 @@ const AccountManagement: React.FC = () => {
       } else {
         message.error(`Lấy danh sách tài khoản thất bại: ${errorMessage}`);
       }
+      setData([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
-    const loadUsers = async () => {
-      await fetchUsers();
-    };
-    void loadUsers();
-  }, []);
+    void fetchUsers();
+  }, [fetchUsers]);
 
   const handleDelete = async (id: number): Promise<void> => {
+    if (!id || typeof id !== 'number') {
+      message.error('ID tài khoản không hợp lệ');
+      return;
+    }
+    
     try {
-      await deleteUser(id);
-      setData(data.filter((item) => item.id !== id));
+      await adminUserService.deleteUser(id);
+      setData(prevData => prevData.filter((item) => item.id !== id));
       message.success('Xóa tài khoản thành công!');
     } catch (error: unknown) {
+      console.error('Error deleting user:', error);
       const errorResponse: ApiErrorResponse = (error as { response?: { data?: ApiErrorResponse } }).response?.data ?? { status: 0 };
       const errorMessage = errorResponse.detail ?? errorResponse.title ?? 'Lỗi không xác định';
       if (errorResponse.status === 401) {
@@ -90,106 +109,124 @@ const AccountManagement: React.FC = () => {
   };
 
   const columns = [
-    { title: 'Tên đăng nhập', dataIndex: 'username', key: 'username', width: 150 },
-    { title: 'Email', dataIndex: 'email', key: 'email', width: 200 },
-    { title: 'Họ và tên', dataIndex: 'fullName', key: 'fullName', width: 150 },
+    { 
+      title: 'STT', 
+      key: 'stt',
+      width: 60,
+      align: 'center' as const,
+      render: (_: unknown, __: unknown, index: number) => {
+        // Tính toán STT dựa trên trang hiện tại
+        return (currentPage - 1) * 5 + index + 1;
+      }
+    },
+    { 
+      title: 'Tên đăng nhập', 
+      dataIndex: 'username', 
+      key: 'username', 
+      width: 140,
+      render: (text: string) => String(text || '-')
+    },
+    { 
+      title: 'Email', 
+      dataIndex: 'email', 
+      key: 'email', 
+      width: 180,
+      render: (text: string) => String(text || '-')
+    },
+    { 
+      title: 'Họ và tên', 
+      dataIndex: 'fullName', 
+      key: 'fullName', 
+      width: 140,
+      render: (text: string) => String(text || '-')
+    },
     {
       title: 'Vai trò',
       dataIndex: 'roles',
       key: 'roles',
-      width: 150,
+      width: 140,
       render: (roles: Role[]) => {
-        const maxDisplay = 2;
-        const displayedRoles = roles.slice(0, maxDisplay);
-        const remainingRoles = roles.length - maxDisplay;
-
-        return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {displayedRoles.map((role) => (
-              <Tag
-                key={role.id}
-                color={role.name === 'ADMIN' ? 'blue' : 'green'}
-                style={{ margin: 0 }}
-              >
-                {role.name}
-              </Tag>
-            ))}
-            {remainingRoles > 0 && (
-              <span style={{ fontSize: '12px', color: '#888' }}>
-                và {remainingRoles} vai trò khác
-              </span>
-            )}
-          </div>
-        );
+        try {
+          if (!roles || !Array.isArray(roles) || roles.length === 0) {
+            return <Tag color="gray" style={{ margin: '2px', fontSize: '11px' }}>USER</Tag>;
+          }
+          
+          // Hiển thị tất cả vai trò trên cùng một hàng
+          return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
+              {roles.map((role, index) => {
+                const roleName = String(role?.name || 'USER');
+                return (
+                  <Tag
+                    key={index}
+                    color={roleName === 'ADMIN' ? 'blue' : 'green'}
+                    style={{ margin: '1px', fontSize: '11px' }}
+                  >
+                    {roleName}
+                  </Tag>
+                );
+              })}
+            </div>
+          );
+        } catch (error) {
+          console.error('Error rendering role:', error);
+          return <Tag color="gray" style={{ margin: '2px', fontSize: '11px' }}>USER</Tag>;
+        }
       },
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      width: 120,
+      width: 100,
       render: (status: string) => {
-        const statusMap: Record<string, { label: string; color: string }> = {
-          ACTIVE: { label: 'Hoạt động', color: 'green' },
-          PENDING_VERIFICATION: { label: 'Chờ xác nhận', color: 'yellow' },
-          DELETED: { label: 'Đã xóa', color: 'red' },
-          SUSPENDED: { label: 'Tạm khóa', color: 'orange' },
-        };
+        try {
+          const statusMap: Record<string, { label: string; color: string }> = {
+            ACTIVE: { label: 'Hoạt động', color: 'green' },
+            PENDING_VERIFICATION: { label: 'Chờ xác nhận', color: 'yellow' },
+            DELETED: { label: 'Đã xóa', color: 'red' },
+            SUSPENDED: { label: 'Tạm khóa', color: 'orange' },
+          };
 
-        const { label, color } = statusMap[status] || {
-          label: status,
-          color: 'gray',
-        };
+          const statusStr = String(status || '');
+          const { label, color } = statusMap[statusStr] || {
+            label: statusStr || 'Không xác định',
+            color: 'gray',
+          };
 
-        return <Tag color={color}>{label}</Tag>;
+          return <Tag color={color} style={{ fontSize: '11px' }}>{label}</Tag>;
+        } catch (error) {
+          console.error('Error rendering status:', error);
+          return <Tag color="gray" style={{ fontSize: '11px' }}>Không xác định</Tag>;
+        }
       },
     },
     {
       title: 'Định danh',
       dataIndex: 'isVerified',
       key: 'isVerified',
-      width: 100,
-      render: (isVerified: boolean) => (isVerified ? 'Định danh' : 'Không'),
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      width: 150,
-      render: (createdAt: string) =>
-        createdAt && dayjs(createdAt).isValid()
-          ? dayjs(createdAt).format('DD/MM/YYYY HH:mm')
-          : 'Không xác định',
-    },
-    {
-      title: 'Cập nhật',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
-      width: 150,
-      render: (updatedAt: string) =>
-        updatedAt && dayjs(updatedAt).isValid()
-          ? dayjs(updatedAt).format('DD/MM/YYYY HH:mm')
-          : 'Không xác định',
+      width: 80,
+      render: (isVerified: boolean) => (isVerified ? 'Có' : 'Không'),
     },
     {
       title: 'Hành động',
       key: 'action',
-      width: 100,
+      width: 120,
       render: (_: unknown, record: User) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '4px' }}>
           <Button
             type="primary"
             icon={<EditOutlined />}
             size="small"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               message.info(`Chỉnh sửa tài khoản: ${record.username}`);
             }}
-          >
-            Sửa
-          </Button>
+          />
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa tài khoản này?"
-            onConfirm={() => {
+            onConfirm={(e) => {
+              e?.stopPropagation();
               void handleDelete(record.id);
             }}
             okText="Có"
@@ -200,9 +237,8 @@ const AccountManagement: React.FC = () => {
               danger
               icon={<DeleteOutlined />}
               size="small"
-            >
-              Xóa
-            </Button>
+              onClick={(e) => e.stopPropagation()}
+            />
           </Popconfirm>
         </div>
       ),
@@ -210,38 +246,132 @@ const AccountManagement: React.FC = () => {
   ];
 
   return (
-    <>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '16px',
-        }}
-      >
-        <Title level={2} style={{ margin: 0 }}>
-          Quản Lý Tài Khoản
-        </Title>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleOpenCreateModal}
-        >
-          Thêm Tài Khoản
-        </Button>
+    <div style={{ 
+      padding: "24px",
+      height: "100vh",
+      background: "#f8fafc",
+      display: "flex",
+      flexDirection: "column"
+    }}>
+      {/* Header Section */}
+      <div style={{
+        background: "linear-gradient(135deg, #5680E9, #84CEEB)",
+        borderRadius: "12px",
+        padding: "24px",
+        marginBottom: "24px",
+        color: "#ffffff",
+        boxShadow: "0 4px 20px rgba(86, 128, 233, 0.2)",
+      }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}>
+          <div>
+            <h2 style={{
+              margin: 0,
+              color: "#ffffff",
+              fontSize: "24px",
+              fontWeight: "600",
+              textShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+            }}>
+              Quản Lý Tài Khoản
+            </h2>
+            <p style={{
+              margin: "8px 0 0 0",
+              color: "rgba(255, 255, 255, 0.9)",
+              fontSize: "14px"
+            }}>
+              Quản lý thông tin người dùng và phân quyền hệ thống
+            </p>
+          </div>
+          <Button
+            type="primary"
+            size="large"
+            icon={<PlusOutlined />}
+            onClick={handleOpenCreateModal}
+            style={{
+              background: "rgba(255, 255, 255, 0.2)",
+              borderColor: "rgba(255, 255, 255, 0.3)",
+              color: "#ffffff",
+              fontWeight: "500",
+              height: "48px",
+              padding: "0 24px",
+              borderRadius: "8px",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+              backdropFilter: "blur(10px)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
+            Thêm Tài Khoản
+          </Button>
+        </div>
       </div>
-      <Table
-        columns={columns}
-        dataSource={data}
-        pagination={{ pageSize: 5 }}
-        loading={loading}
-        onRow={(record) => ({
-          onClick: () => handleRowClick(record),
-          style: { cursor: 'pointer' },
-        })}
-        rowKey="id"
-        scroll={{ x: 'max-content' }}
-      />
+
+      {/* Table Section */}
+      <div style={{
+        background: "#ffffff",
+        borderRadius: "12px",
+        padding: "24px",
+        boxShadow: "0 2px 12px rgba(86, 128, 233, 0.08)",
+        border: "1px solid rgba(86, 128, 233, 0.1)",
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden"
+      }}>
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={{ 
+            pageSize: 5, 
+            showSizeChanger: false,
+            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} tài khoản`,
+            style: { marginTop: "16px" },
+            current: currentPage,
+            onChange: (page) => setCurrentPage(page)
+          }}
+          loading={loading}
+          onRow={(record) => ({
+            onClick: () => {
+              if (record?.id) {
+                handleRowClick(record);
+              }
+            },
+            style: { 
+              cursor: 'pointer',
+              transition: "all 0.2s ease"
+            },
+          })}
+          rowKey={(record) => {
+            try {
+              return record?.id ? String(record.id) : Math.random().toString();
+            } catch (error) {
+              console.error('Error generating rowKey:', error);
+              return Math.random().toString();
+            }
+          }}
+          scroll={{ x: 'max-content', y: 'calc(100vh - 320px)' }}
+          size="large"
+          locale={{
+            emptyText: 'Không có dữ liệu',
+            filterTitle: 'Bộ lọc',
+            filterConfirm: 'OK',
+            filterReset: 'Đặt lại',
+            selectAll: 'Chọn tất cả',
+            selectInvert: 'Chọn ngược lại',
+          }}
+          className="admin-table"
+        />
+      </div>
+
       <AccountDetailModal
         visible={isDetailModalVisible}
         account={selectedAccount}
@@ -254,7 +384,7 @@ const AccountManagement: React.FC = () => {
           void fetchUsers();
         }}
       />
-    </>
+    </div>
   );
 };
 

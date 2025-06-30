@@ -83,6 +83,21 @@ public class LikeServiceImpl implements LikeService {
         
         Like savedLike = likeRepository.save(like);
         
+        // Tăng số lượng like cho target tương ứng
+        if (createLikeDTO.getTargetType() == TargetType.POST) {
+            Post post = postRepository.findById(createLikeDTO.getTargetId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bài đăng với ID: " + createLikeDTO.getTargetId()));
+            
+            post.setLikeCount(post.getLikeCount() == null ? 1 : post.getLikeCount() + 1);
+            postRepository.save(post);
+        } else if (createLikeDTO.getTargetType() == TargetType.COMMENT) {
+            Comment comment = commentRepository.findById(createLikeDTO.getTargetId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bình luận với ID: " + createLikeDTO.getTargetId()));
+            
+            comment.setLikeCount(comment.getLikeCount() == null ? 1 : comment.getLikeCount() + 1);
+            commentRepository.save(comment);
+        }
+        
         return convertToDTO(savedLike);
     }
     
@@ -93,7 +108,27 @@ public class LikeServiceImpl implements LikeService {
         Like like = likeRepository.findById(likeId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lượt thích với ID: " + likeId));
         
+        // Xóa lượt thích
         likeRepository.delete(like);
+        
+        // Giảm số lượng like cho target tương ứng
+        if (like.getTargetType() == TargetType.POST) {
+            Post post = postRepository.findById(like.getTargetId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bài đăng với ID: " + like.getTargetId()));
+            
+            if (post.getLikeCount() != null && post.getLikeCount() > 0) {
+                post.setLikeCount(post.getLikeCount() - 1);
+                postRepository.save(post);
+            }
+        } else if (like.getTargetType() == TargetType.COMMENT) {
+            Comment comment = commentRepository.findById(like.getTargetId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bình luận với ID: " + like.getTargetId()));
+            
+            if (comment.getLikeCount() != null && comment.getLikeCount() > 0) {
+                comment.setLikeCount(comment.getLikeCount() - 1);
+                commentRepository.save(comment);
+            }
+        }
     }
     
     @Override
@@ -263,6 +298,10 @@ public class LikeServiceImpl implements LikeService {
         
         Like savedLike = likeRepository.save(like);
         
+        // Tăng số lượng like của bài đăng
+        post.setLikeCount(post.getLikeCount() == null ? 1 : post.getLikeCount() + 1);
+        postRepository.save(post);
+        
         return convertToDTO(savedLike);
     }
     
@@ -292,6 +331,10 @@ public class LikeServiceImpl implements LikeService {
         like.setCreatedAt(Instant.now());
         
         Like savedLike = likeRepository.save(like);
+        
+        // Tăng số lượng like của bình luận
+        comment.setLikeCount(comment.getLikeCount() == null ? 1 : comment.getLikeCount() + 1);
+        commentRepository.save(comment);
         
         return convertToDTO(savedLike);
     }

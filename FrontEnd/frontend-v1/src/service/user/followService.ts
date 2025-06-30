@@ -1,15 +1,15 @@
 // src/service/user/followService.ts
 import api from '../admin/api';
-import { Follow, ApiResponse } from '../../types/follow';
+import { Follow, FollowUser, ApiResponse } from '../../types';
 
 /**
  * Lấy danh sách người đang theo dõi (following)
  * @param userId ID của người dùng
  * @returns Promise với danh sách người đang theo dõi
  */
-export const getFollowing = async (userId: number): Promise<ApiResponse<Follow[]>> => {
+export const getFollowing = async (userId: number): Promise<ApiResponse<FollowUser[]>> => {
   try {
-    const response = await api.get<ApiResponse<Follow[]>>(`/users/${userId}/following`);
+    const response = await api.get<ApiResponse<FollowUser[]>>(`/users/${userId}/following`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching following for user ${userId}:`, error);
@@ -22,9 +22,9 @@ export const getFollowing = async (userId: number): Promise<ApiResponse<Follow[]
  * @param userId ID của người dùng
  * @returns Promise với danh sách người theo dõi
  */
-export const getFollowers = async (userId: number): Promise<ApiResponse<Follow[]>> => {
+export const getFollowers = async (userId: number): Promise<ApiResponse<FollowUser[]>> => {
   try {
-    const response = await api.get<ApiResponse<Follow[]>>(`/users/${userId}/followers`);
+    const response = await api.get<ApiResponse<FollowUser[]>>(`/users/${userId}/followers`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching followers for user ${userId}:`, error);
@@ -54,10 +54,25 @@ export const followUser = async (userId: number): Promise<ApiResponse<Follow>> =
  */
 export const unfollowUser = async (userId: number): Promise<ApiResponse<null>> => {
   try {
-    const response = await api.delete<ApiResponse<null>>(`/users/${userId}/unfollow`);
+    const response = await api.delete<ApiResponse<null>>(`/users/${userId}/follow`);
     return response.data;
   } catch (error) {
     console.error(`Error unfollowing user ${userId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Kiểm tra xem có đang follow user hay không
+ * @param userId ID của người dùng cần kiểm tra
+ * @returns Promise với trạng thái follow
+ */
+export const checkFollowStatus = async (userId: number): Promise<ApiResponse<{ isFollowing: boolean }>> => {
+  try {
+    const response = await api.get<ApiResponse<{ isFollowing: boolean }>>(`/users/${userId}/follow-status`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error checking follow status for user ${userId}:`, error);
     throw error;
   }
 };

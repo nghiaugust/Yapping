@@ -29,9 +29,9 @@ export interface Post {
   quoteCount: number | null;
   createdAt: string;
   updatedAt: string;
-  post_type: string | null;
+  post_type: "TEXT" | "RESOURCE" | null; // Đồng bộ với Backend enum
   media: Media[] | null;
-  isLiked?: boolean;
+  isLiked?: boolean; // Frontend only field
 }
 
 export interface PostPageResponse {

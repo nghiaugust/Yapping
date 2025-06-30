@@ -1,6 +1,6 @@
 // src/service/user/commentService.ts
 import api from '../admin/api';
-import { Comment, CommentPageResponse, CreateCommentRequest, ApiResponse } from '../../types/comment';
+import { Comment, CommentPageResponse, CreateCommentRequest, UpdateCommentRequest, ApiResponse } from '../../types';
 
 // Lấy danh sách bình luận của một bài viết
 export const getPostComments = async (
@@ -10,155 +10,86 @@ export const getPostComments = async (
 ): Promise<ApiResponse<CommentPageResponse>> => {
   try {
     console.log(`Fetching comments for post ${postId}, page ${page}, size ${size}`);
-    const response = await api.get(
+    const response = await api.get<ApiResponse<CommentPageResponse>>(
       `/comments/post/${postId}?page=${page}&size=${size}&sort=createdAt,desc`
     );
     
     console.log('Raw API response:', response);
-    console.log('Response data:', response.data);
-    
-    // Kiểm tra cấu trúc response
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (response.data?.success) {
-      // Response có cấu trúc: { status, success, message, data }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      console.log('Response data.data:', response.data.data);
-      return {
-        success: true,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        message: response.data.message ?? 'Lấy danh sách bình luận thành công',
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        data: response.data.data
-      };
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    } else if (response.data?.content !== undefined) {
-      // Response trực tiếp là pagination data
-      console.log('Direct pagination response:', response.data);
-      return {
-        success: true,
-        message: 'Lấy danh sách bình luận thành công',
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        data: response.data
-      };
-    } else {
-      console.error('Unexpected response structure:', response.data);
-      return {
-        success: false,
-        message: 'Cấu trúc response không hợp lệ',
-        data: {
-          content: [],
-          totalElements: 0,
-          totalPages: 0,
-          last: true,
-          first: true,
-          size: size,
-          number: page,
-          numberOfElements: 0,
-          empty: true
-        } as CommentPageResponse
-      };
-    }
+    return response.data;
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách bình luận:', error);
-    return {
-      success: false,
-      message: 'Không thể lấy danh sách bình luận',
-      data: {
-        content: [],
-        totalElements: 0,
-        totalPages: 0,
-        last: true,
-        first: true,
-        size: size,
-        number: page,
-        numberOfElements: 0,
-        empty: true
-      } as CommentPageResponse
-    };
+    console.error(`Error fetching comments for post ${postId}:`, error);
+    throw error;
   }
 };
 
 // Tạo bình luận mới
-export const createComment = async (
-  commentData: CreateCommentRequest
-): Promise<ApiResponse<Comment>> => {
+export const createComment = async (commentData: CreateCommentRequest): Promise<ApiResponse<Comment>> => {
   try {
-    const response = await api.post<Comment>('/comments', commentData);
-    
-    return {
-      success: true,
-      message: 'Tạo bình luận thành công',
-      data: response.data
-    };
+    const response = await api.post<ApiResponse<Comment>>('/comments', commentData);
+    return response.data;
   } catch (error) {
-    console.error('Lỗi khi tạo bình luận:', error);
-    return {
-      success: false,
-      message: 'Không thể tạo bình luận',
-      data: {} as Comment
-    };
+    console.error('Error creating comment:', error);
+    throw error;
   }
 };
 
-// Thích/bỏ thích bình luận
-export const likeComment = async (commentId: number): Promise<ApiResponse<void>> => {
+// Cập nhật bình luận
+export const updateComment = async (commentId: number, commentData: UpdateCommentRequest): Promise<ApiResponse<Comment>> => {
   try {
-    await api.post(`/comments/${commentId}/like`);
-    
-    return {
-      success: true,
-      message: 'Thực hiện thành công',
-      data: undefined
-    };
+    const response = await api.put<ApiResponse<Comment>>(`/comments/${commentId}`, commentData);
+    return response.data;
   } catch (error) {
-    console.error('Lỗi khi thích bình luận:', error);
-    return {
-      success: false,
-      message: 'Không thể thực hiện',
-      data: undefined
-    };
+    console.error(`Error updating comment ${commentId}:`, error);
+    throw error;
   }
 };
 
 // Xóa bình luận
-export const deleteComment = async (commentId: number): Promise<ApiResponse<void>> => {
+export const deleteComment = async (commentId: number): Promise<ApiResponse<null>> => {
   try {
-    await api.delete(`/comments/${commentId}`);
-    
-    return {
-      success: true,
-      message: 'Xóa bình luận thành công',
-      data: undefined
-    };
+    const response = await api.delete<ApiResponse<null>>(`/comments/${commentId}`);
+    return response.data;
   } catch (error) {
-    console.error('Lỗi khi xóa bình luận:', error);
-    return {
-      success: false,
-      message: 'Không thể xóa bình luận',
-      data: undefined
-    };
+    console.error(`Error deleting comment ${commentId}:`, error);
+    throw error;
   }
 };
 
-// Sửa bình luận
-export const updateComment = async (
-  commentId: number,
-  content: string
-): Promise<ApiResponse<Comment>> => {
+// Like bình luận
+export const likeComment = async (commentId: number): Promise<ApiResponse<Comment>> => {
   try {
-    const response = await api.put<Comment>(`/comments/${commentId}`, { content });
-    
-    return {
-      success: true,
-      message: 'Cập nhật bình luận thành công',
-      data: response.data
-    };
+    const response = await api.post<ApiResponse<Comment>>(`/comments/${commentId}/like`);
+    return response.data;
   } catch (error) {
-    console.error('Lỗi khi cập nhật bình luận:', error);
-    return {
-      success: false,
-      message: 'Không thể cập nhật bình luận',
-      data: {} as Comment
-    };
+    console.error(`Error liking comment ${commentId}:`, error);
+    throw error;
+  }
+};
+
+// Unlike bình luận
+export const unlikeComment = async (commentId: number): Promise<ApiResponse<Comment>> => {
+  try {
+    const response = await api.delete<ApiResponse<Comment>>(`/comments/${commentId}/like`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error unliking comment ${commentId}:`, error);
+    throw error;
+  }
+};
+
+// Lấy reply của một comment
+export const getCommentReplies = async (
+  commentId: number,
+  page = 0,
+  size = 10
+): Promise<ApiResponse<CommentPageResponse>> => {
+  try {
+    const response = await api.get<ApiResponse<CommentPageResponse>>(
+      `/comments/${commentId}/replies?page=${page}&size=${size}&sort=createdAt,asc`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching replies for comment ${commentId}:`, error);
+    throw error;
   }
 };

@@ -30,7 +30,7 @@ public class NotificationController {
     private NotificationService notificationService;
 
     // Tạo thông báo mới (chủ yếu sử dụng nội bộ hoặc từ Admin)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping
     public ResponseEntity<ApiResponse> createNotification(@Valid @RequestBody CreateNotificationDTO createNotificationDTO) {
         try {

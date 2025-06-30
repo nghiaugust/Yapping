@@ -1,4 +1,583 @@
+/* Sidebar Admin Styles */
 .sidebar-menu .ant-menu-item {
-  margin-bottom: 20px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  margin-left: 12px;
+  margin-right: 12px;
+  padding: 12px 16px;
+  height: auto;
+  line-height: 1.4;
+  transition: all 0.3s ease;
+  color: #4a5568;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(86, 128, 233, 0.08);
+}
+
+.sidebar-menu .ant-menu-item:hover {
+  background: rgba(86, 128, 233, 0.08) !important;
+  transform: translateX(4px);
+  box-shadow: 0 6px 20px rgba(86, 128, 233, 0.12);
+  color: #5680E9 !important;
+  border: 1px solid rgba(86, 128, 233, 0.2);
+}
+
+.sidebar-menu .ant-menu-item-selected {
+  background: linear-gradient(135deg, rgba(86, 128, 233, 0.12), rgba(132, 206, 235, 0.08)) !important;
+  color: #5680E9 !important;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(86, 128, 233, 0.15);
+  border: 1px solid rgba(86, 128, 233, 0.25);
+  border-left: 4px solid #5680E9;
+}
+
+.sidebar-menu .ant-menu-item-selected::after {
+  display: none;
+}
+
+.sidebar-menu .ant-menu-item .anticon {
+  font-size: 16px;
+  margin-right: 12px;
+  color: #4a5568;
+  transition: color 0.3s ease;
+}
+
+.sidebar-menu .ant-menu-item:hover .anticon {
+  color: #5680E9;
+}
+
+.sidebar-menu .ant-menu-item span {
+  color: #4a5568;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.sidebar-menu .ant-menu-item:hover span {
+  color: #5680E9;
+}
+
+.sidebar-menu .ant-menu-item-selected .anticon,
+.sidebar-menu .ant-menu-item-selected span {
+  color: #5680E9 !important;
+  font-weight: 600;
+}
+
+/* Admin Table Styles */
+.admin-table .ant-table-thead > tr > th {
+  background: linear-gradient(135deg, #f8faff, #f1f5ff);
+  border-bottom: 2px solid #5680E9;
+  color: #5680E9;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 16px 12px;
+}
+
+.admin-table .ant-table-tbody > tr:hover > td {
+  background: linear-gradient(135deg, rgba(86, 128, 233, 0.04), rgba(132, 206, 235, 0.04)) !important;
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(86, 128, 233, 0.1);
+}
+
+.admin-table .ant-table-tbody > tr > td {
+  padding: 12px;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(86, 128, 233, 0.1);
+}
+
+.admin-table .ant-pagination {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.admin-table .ant-pagination .ant-pagination-item-active {
+  background: #5680E9;
+  border-color: #5680E9;
+}
+
+.admin-table .ant-pagination .ant-pagination-item-active a {
+  color: #ffffff;
+}
+
+/* Admin Table Full Height Layout */
+.admin-table .ant-table-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-table .ant-table {
+  flex: 1;
+}
+
+.admin-table .ant-table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-table .ant-table-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Enhanced table row height for 5 rows */
+.admin-table .ant-table-thead > tr > th,
+.admin-table .ant-table-tbody > tr > td {
+  padding: 16px 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.admin-table .ant-table-thead > tr > th {
+  background: #fafbfc;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* STT column center alignment */
+.admin-table .ant-table-tbody > tr > td:first-child {
+  text-align: center;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+/* Responsive table height */
+@media (max-height: 700px) {
+  .admin-table .ant-table-thead > tr > th,
+  .admin-table .ant-table-tbody > tr > td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+}
+
+/* Role tags layout */
+.admin-table .ant-tag {
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+  padding: 2px 8px;
+}
+
+/* Table hover effect optimization */
+.admin-table .ant-table-tbody > tr:hover > td {
+  background: rgba(86, 128, 233, 0.03) !important;
+  transform: scale(1.01);
+  transition: all 0.2s ease;
+}
+
+/* Table striped rows for better readability */
+.admin-table .ant-table-tbody > tr:nth-child(even) > td {
+  background: rgba(248, 250, 252, 0.5);
+}
+
+/* Sidebar logout menu */
+.logout-menu .ant-menu-item {
+  margin-bottom: 8px;
+  border-radius: 12px;
+  margin-left: 12px;
+  margin-right: 12px;
+  padding: 12px 16px;
+  height: auto;
+  line-height: 1.4;
+  transition: all 0.3s ease;
+  color: #718096;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 77, 79, 0.1);
+}
+
+.logout-menu .ant-menu-item:hover {
+  background: rgba(255, 77, 79, 0.08) !important;
+  color: #ff4d4f !important;
+  border: 1px solid rgba(255, 77, 79, 0.2);
+  transform: translateX(4px);
+  box-shadow: 0 6px 20px rgba(255, 77, 79, 0.12);
+}
+
+.logout-menu .ant-menu-item .anticon {
+  font-size: 16px;
+  margin-right: 12px;
+  color: #718096;
+  transition: color 0.3s ease;
+}
+
+.logout-menu .ant-menu-item:hover .anticon {
+  color: #ff4d4f;
+}
+
+.logout-menu .ant-menu-item span {
+  color: #718096;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.logout-menu .ant-menu-item:hover span {
+  color: #ff4d4f;
+}
+
+/* Sidebar container styles */
+.admin-sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.sidebar-header {
+  padding: 24px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.3);
+  margin: 16px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(86, 128, 233, 0.1);
+  box-shadow: 0 4px 12px rgba(86, 128, 233, 0.06);
+}
+
+.admin-info {
+  margin-top: 12px;
+}
+
+.sidebar-footer {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+}
+
+/* Collapsed state styles */
+.ant-layout-sider-collapsed .sidebar-header {
+  padding: 20px 12px;
+  margin: 16px 8px;
+}
+
+.ant-layout-sider-collapsed .admin-info {
+  display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ant-layout-sider {
+    position: fixed !important;
+    z-index: 1001 !important;
+    height: 100vh !important;
+  }
   
+  .ant-layout-content {
+    margin-left: 80px !important;
+  }
+}
+
+/* Admin Layout Responsive */
+.admin-main-layout {
+  transition: margin-left 0.3s ease !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .admin-main-layout {
+    margin-left: 0 !important;
+  }
+  
+  .ant-layout-sider {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .ant-layout-sider:not(.ant-layout-sider-collapsed) {
+    transform: translateX(0);
+  }
+}
+
+/* Tablet responsive */
+@media (max-width: 1024px) {
+  .admin-main-layout {
+    margin-left: 80px !important;
+  }
+}
+
+/* Ensure full width content */
+.admin-main-layout .ant-layout-content {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+/* Custom Scrollbar */
+.ant-layout-sider::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ant-layout-sider::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Smooth transitions for layout changes */
+.ant-layout,
+.ant-layout-content {
+  transition: all 0.3s ease;
+}
+
+/* Card hover effects */
+.admin-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(86, 128, 233, 0.1);
+}
+
+.admin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(86, 128, 233, 0.12);
+  border-color: rgba(86, 128, 233, 0.2);
+}
+
+/* Account Detail Modal Styles */
+.account-detail-modal .ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(86, 128, 233, 0.2);
+}
+
+.account-detail-modal .ant-modal-header {
+  display: none;
+}
+
+.account-detail-modal .ant-modal-body {
+  padding: 0;
+}
+
+.account-detail-modal .ant-modal-close {
+  display: none;
+}
+
+/* Create Account Modal Form Styles */
+.account-detail-modal .ant-form-item-label > label {
+  color: #374151;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.account-detail-modal .ant-input,
+.account-detail-modal .ant-input-password,
+.account-detail-modal .ant-select-selector {
+  border-radius: 8px;
+  border: 1px solid rgba(86, 128, 233, 0.2);
+  transition: all 0.3s ease;
+}
+
+.account-detail-modal .ant-input:focus,
+.account-detail-modal .ant-input-password:focus,
+.account-detail-modal .ant-input:hover,
+.account-detail-modal .ant-input-password:hover {
+  border-color: #5680E9;
+  box-shadow: 0 0 0 2px rgba(86, 128, 233, 0.1);
+}
+
+.account-detail-modal .ant-select:hover .ant-select-selector,
+.account-detail-modal .ant-select-focused .ant-select-selector {
+  border-color: #5680E9 !important;
+  box-shadow: 0 0 0 2px rgba(86, 128, 233, 0.1) !important;
+}
+
+.account-detail-modal .ant-select-dropdown {
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(86, 128, 233, 0.15);
+}
+
+.account-detail-modal .ant-select-item-option-selected {
+  background: rgba(86, 128, 233, 0.1) !important;
+  color: #5680E9 !important;
+}
+
+.account-detail-modal .ant-input-affix-wrapper {
+  border-radius: 8px;
+  border: 1px solid rgba(86, 128, 233, 0.2);
+  padding: 10px 12px;
+}
+
+.account-detail-modal .ant-input-affix-wrapper:hover,
+.account-detail-modal .ant-input-affix-wrapper:focus-within {
+  border-color: #5680E9;
+  box-shadow: 0 0 0 2px rgba(86, 128, 233, 0.1);
+}
+
+/* CreateAccountModal Styles */
+.create-account-modal .ant-modal-content {
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(86, 128, 233, 0.1) !important;
+}
+
+.create-account-modal .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.create-account-modal .ant-form-item-label > label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.create-account-modal .ant-input,
+.create-account-modal .ant-input-password,
+.create-account-modal .ant-select-selector {
+  border-radius: 8px !important;
+  border: 1px solid rgba(86, 128, 233, 0.2) !important;
+  transition: all 0.3s ease;
+}
+
+.create-account-modal .ant-input:focus,
+.create-account-modal .ant-input-password:focus,
+.create-account-modal .ant-select-focused .ant-select-selector {
+  border-color: #5680E9 !important;
+  box-shadow: 0 0 0 3px rgba(86, 128, 233, 0.1) !important;
+}
+
+.create-account-modal .ant-input:hover,
+.create-account-modal .ant-input-password:hover,
+.create-account-modal .ant-select:hover .ant-select-selector {
+  border-color: #5680E9 !important;
+}
+
+.create-account-modal .ant-select-multiple .ant-select-selection-item {
+  background: linear-gradient(135deg, rgba(86, 128, 233, 0.1), rgba(132, 206, 235, 0.1)) !important;
+  border: 1px solid rgba(86, 128, 233, 0.3) !important;
+  border-radius: 6px !important;
+  color: #5680E9 !important;
+  font-weight: 500;
+}
+
+.create-account-modal .ant-btn-primary {
+  background: linear-gradient(135deg, #5680E9, #84CEEB) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(86, 128, 233, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.create-account-modal .ant-btn-primary:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(86, 128, 233, 0.3) !important;
+}
+
+/* Responsive styles for CreateAccountModal */
+@media (max-width: 768px) {
+  .create-account-modal {
+    margin: 0 16px !important;
+  }
+
+  .create-account-modal .ant-modal {
+    max-width: calc(100vw - 32px) !important;
+    margin: 0 !important;
+  }
+
+  .create-account-modal .ant-modal-content {
+    margin: 0 !important;
+  }
+  
+  /* Stack form columns on mobile */
+  .create-account-modal .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .create-account-modal .header-content h2 {
+    font-size: 18px !important;
+  }
+  
+  .create-account-modal .header-content p {
+    font-size: 12px !important;
+  }
+  
+  .create-account-modal .form-section {
+    padding: 16px !important;
+  }
+  
+  .create-account-modal .footer-buttons {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  .create-account-modal .footer-buttons button {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-account-modal .header-avatar {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  
+  .create-account-modal .header-avatar svg {
+    font-size: 18px !important;
+  }
+}
+
+/* Responsive modal */
+@media (max-width: 768px) {
+  .account-detail-modal {
+    margin: 16px;
+  }
+  
+  .account-detail-modal .ant-modal {
+    max-width: calc(100vw - 32px);
+  }
+  
+  .account-detail-modal .ant-modal-content {
+    margin: 0;
+  }
+}
+
+/* Grid responsive for mobile */
+@media (max-width: 640px) {
+  .account-detail-modal [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Modal animation enhancement */
+.account-detail-modal .ant-modal-mask {
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.account-detail-modal .ant-modal-content {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Scrollbar styling for form */
+.account-detail-modal .ant-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.account-detail-modal .ant-form::-webkit-scrollbar-track {
+  background: rgba(86, 128, 233, 0.05);
+  border-radius: 3px;
+}
+
+.account-detail-modal .ant-form::-webkit-scrollbar-thumb {
+  background: rgba(86, 128, 233, 0.3);
+  border-radius: 3px;
+}
+
+.account-detail-modal .ant-form::-webkit-scrollbar-thumb:hover {
+  background: rgba(86, 128, 233, 0.5);
 }

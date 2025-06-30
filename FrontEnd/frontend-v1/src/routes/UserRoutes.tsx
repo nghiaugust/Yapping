@@ -20,8 +20,10 @@ export default function UserRoutes() {
             <LayoutUser />
           </ProtectedRoute>
         }
-      >        <Route index element={<Home />} />
-        <Route path="profile" element={<UserProfile />} />        <Route path="create-post" element={<CreatePostUnified />} />
+      >        
+        <Route index element={<Home />} />
+        <Route path="profile" element={<UserProfile />} />        
+        <Route path="create-post" element={<CreatePostUnified />} />
         <Route path="resources" element={<Resources />} />
         <Route path="search" element={<Search />} />
         <Route path="bookmarks" element={<Bookmarks />} />

@@ -55,6 +55,11 @@ export interface CommentPageResponse {
 export interface CreateCommentRequest {
   content: string;
   postId: number;
+  parentCommentId?: number; // Để reply comment
+}
+
+export interface UpdateCommentRequest {
+  content: string;
 }
 
 export interface ApiResponse<T> {

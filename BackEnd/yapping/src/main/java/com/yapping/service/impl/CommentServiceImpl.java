@@ -3,7 +3,9 @@ package com.yapping.service.impl;
 import com.yapping.dto.comment.CommentDTO;
 import com.yapping.dto.comment.CreateCommentDTO;
 import com.yapping.dto.comment.UpdateCommentDTO;
+import com.yapping.dto.notification.CreateNotificationDTO;
 import com.yapping.entity.Comment;
+import com.yapping.entity.Notification;
 import com.yapping.entity.Post;
 import com.yapping.entity.User;
 import com.yapping.repository.CommentRepository;
@@ -14,15 +16,16 @@ import com.yapping.service.LikeService;
 import com.yapping.service.MentionService;
 import com.yapping.service.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
-import java.time.Instant;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -44,6 +47,7 @@ public class CommentServiceImpl implements CommentService {
     
     @Autowired
     private LikeService likeService;
+
 
     @Override
     @Transactional
@@ -80,34 +84,72 @@ public class CommentServiceImpl implements CommentService {
         
         // Lưu comment
         Comment savedComment = commentRepository.save(comment);
+
         
         // Tăng comment_count của post
         post.setCommentCount(post.getCommentCount() == null ? 1 : post.getCommentCount() + 1);
         postRepository.save(post);
-        
+
+        CreateNotificationDTO createNotificationDTO = new CreateNotificationDTO();
         // Tạo thông báo
         // 1. Nếu đây là bình luận gốc, thông báo cho chủ bài đăng
         if (parentComment == null) {
             // Chỉ tạo thông báo nếu người bình luận không phải là chủ bài đăng
             if (!user.getId().equals(post.getUser().getId())) {
-                notificationService.createCommentNotification(
-                        userId, 
-                        post.getId(), 
-                        post.getUser().getId(),
-                        savedComment.getId()
-                );
+
+                // notificationServiceImpl.createAndSendNotification(
+                //         post.getUser().getId(),
+                //         userId,
+                //         Notification.Type.COMMENT,
+                //         Notification.TargetType.POST,
+                //         post.getId(),
+                //         post.getUser().getId()
+                // );
+                // notificationService.createCommentNotification(
+                //         userId, 
+                //         post.getId(), 
+                //         post.getUser().getId(),
+                //         savedComment.getId()
+                // );
+                createNotificationDTO.setUserId(post.getUser().getId());
+                createNotificationDTO.setActorId(userId);
+                createNotificationDTO.setType(Notification.Type.COMMENT);
+                createNotificationDTO.setTargetType(Notification.TargetType.POST);
+                createNotificationDTO.setTargetId(post.getId());
+                createNotificationDTO.setTargetOwnerId(post.getUser().getId());
+                createNotificationDTO.setMessage("Bạn có một bình luận mới trên bài đăng của mình");
+
+                notificationService.createNotification(createNotificationDTO);
             }
         } 
         // 2. Nếu đây là phản hồi cho một bình luận khác, thông báo cho chủ bình luận gốc
         else {
             // Chỉ tạo thông báo nếu người trả lời không phải là chủ bình luận gốc
             if (!user.getId().equals(parentComment.getUser().getId())) {
-                notificationService.createReplyCommentNotification(
-                        userId,
-                        parentComment.getId(),
-                        parentComment.getUser().getId(),
-                        savedComment.getId()
-                );
+
+                // notificationServiceImpl.createAndSendNotification(
+                //         parentComment.getUser().getId(),
+                //         userId,
+                //         Notification.Type.REPLY_COMMENT,
+                //         Notification.TargetType.COMMENT,
+                //         savedComment.getId(),
+                //         parentComment.getUser().getId()
+                // );
+                // notificationService.createReplyCommentNotification(
+                //         userId,
+                //         parentComment.getId(),
+                //         parentComment.getUser().getId(),
+                //         savedComment.getId()
+                // );
+
+                createNotificationDTO.setUserId(parentComment.getUser().getId());
+                createNotificationDTO.setActorId(userId);
+                createNotificationDTO.setType(Notification.Type.REPLY_COMMENT);
+                createNotificationDTO.setTargetType(Notification.TargetType.COMMENT);
+                createNotificationDTO.setTargetId(savedComment.getId());
+                createNotificationDTO.setTargetOwnerId(parentComment.getUser().getId());
+
+                notificationService.createNotification(createNotificationDTO );
             }
         }
         

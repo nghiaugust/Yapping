@@ -34,11 +34,10 @@ public class ReportController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping
     public ResponseEntity<ApiResponse> createReport(@Valid @RequestBody CreateReportDTO createReportDTO) {
-        // Lấy userId từ authentication
         Map<String, Object> details = (Map<String, Object>) SecurityContextHolder.getContext().getAuthentication().getDetails();
         Map<String, Object> claims = (Map<String, Object>) details.get("claims");
         Long userId = (Long) claims.get("userId");
-        
+
         ReportDTO createdReport = reportService.createReport(createReportDTO, userId);
         
         ApiResponse response = new ApiResponse(
@@ -181,8 +180,9 @@ public class ReportController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = Long.parseLong(authentication.getName());
+        Map<String, Object> details = (Map<String, Object>) SecurityContextHolder.getContext().getAuthentication().getDetails();
+        Map<String, Object> claims = (Map<String, Object>) details.get("claims");
+        Long userId = (Long) claims.get("userId");
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<ReportDTO> reports = reportService.getReportsByReporter(userId, pageable);

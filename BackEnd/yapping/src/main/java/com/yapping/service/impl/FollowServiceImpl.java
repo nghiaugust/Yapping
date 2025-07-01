@@ -1,8 +1,10 @@
 package com.yapping.service.impl;
 
 import com.yapping.dto.follow.FollowDTO;
+import com.yapping.dto.notification.CreateNotificationDTO;
 import com.yapping.entity.Follow;
 import com.yapping.entity.FollowId;
+import com.yapping.entity.Notification;
 import com.yapping.entity.User;
 import com.yapping.repository.FollowRepository;
 import com.yapping.repository.UserRepository;
@@ -27,6 +29,9 @@ public class FollowServiceImpl implements FollowService {
     
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private NotificationServiceImpl notificationServiceImpl;
 
     @Override
     @Transactional
@@ -55,8 +60,27 @@ public class FollowServiceImpl implements FollowService {
         followRepository.save(follow);
 
         // Tạo thông báo cho người được follow
-        notificationService.createFollowNotification(followerId, followedId);
+        // notificationService.createFollowNotification(followerId, followedId);
+        CreateNotificationDTO createNotificationDTO = new CreateNotificationDTO();
+        createNotificationDTO.setUserId(follower.getId());
+        createNotificationDTO.setActorId(followed.getId());
+        createNotificationDTO.setType(Notification.Type.FOLLOW);
+        createNotificationDTO.setTargetType(Notification.TargetType.USER);
+        createNotificationDTO.setTargetId(follower.getId()); // targetId là ID của người follow
+        createNotificationDTO.setTargetOwnerId(null); // không cần targetOwnerId cho follow
+        createNotificationDTO.setMessage(follower.getUsername() + " đã theo dõi bạn");
 
+        notificationService.createNotification(createNotificationDTO);
+
+        // Trong method followUser(), thêm sau khi save follow:
+        // notificationServiceImpl.createAndSendNotification(
+        //         followedId,         // người nhận notification
+        //         followerId,         // người thực hiện action
+        //         Notification.Type.FOLLOW,
+        //         Notification.TargetType.USER,
+        //         followerId,         // targetId là ID của người follow
+        //         null               // không cần targetOwnerId cho follow
+        // );
         // Chuyển đổi thành DTO để trả về
         FollowDTO followDTO = new FollowDTO();
         followDTO.setFollowerId(followerId);

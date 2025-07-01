@@ -14,6 +14,7 @@ import com.yapping.repository.CommentRepository;
 import com.yapping.repository.NotificationRepository;
 import com.yapping.repository.PostRepository;
 import com.yapping.repository.UserRepository;
+import com.yapping.service.FCMService;
 import com.yapping.service.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ public class NotificationServiceImpl implements NotificationService {
     
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private FCMService fcmService;
     
     @Autowired
     private CommentRepository commentRepository;
@@ -146,7 +149,83 @@ public class NotificationServiceImpl implements NotificationService {
                 return baseUrl;
         }
     }
-    
+
+//    public void createAndSendNotification(Long userId) {
+//        try {
+//            // Tạo thông báo trong database
+//            CreateNotificationDTO createDTO = new CreateNotificationDTO();
+//            createDTO.setUserId(userId);
+//            createDTO.setActorId(actorId);
+//            createDTO.setType(type);
+//            createDTO.setTargetType(targetType);
+//            createDTO.setTargetId(targetId);
+//            createDTO.setTargetOwnerId(targetOwnerId);
+//            NotificationDTO notification = createNotification(createDTO);
+//
+//            // Tạo message cho push notification
+//            String title = generateNotificationTitle(type);
+//            String body = generateNotificationBody(notification);
+//
+//            // Gửi push notification
+//            fcmService.sendNotificationToUser(userId, title, body, type, targetId, actorId);
+//
+//        } catch (Exception e) {
+//            // Log lỗi nếu có
+//            System.err.println("Error creating or sending notification: " + e.getMessage());
+//        }
+//    }
+    private String generateNotificationTitle(Notification.Type type) {
+        switch (type) {
+            case LIKE_POST:
+                return "Bài viết được thích";
+            case LIKE_COMMENT:
+                return "Bình luận được thích";
+            case COMMENT:
+                return "Bình luận mới";
+            case REPLY_POST:
+                return "Phản hồi bài viết";
+            case REPLY_COMMENT:
+                return "Phản hồi bình luận";
+            case FOLLOW:
+                return "Người theo dõi mới";
+            case MENTION_POST:
+                return "Được nhắc đến trong bài viết";
+            case MENTION_COMMENT:
+                return "Được nhắc đến trong bình luận";
+            case REPOST:
+                return "Bài viết được chia sẻ";
+            default:
+                return "Thông báo mới";
+        }
+    }
+    private String generateNotificationBody(NotificationDTO notification) {
+        String actorName = notification.getActorFullName() != null && !notification.getActorFullName().isEmpty()
+                ? notification.getActorFullName()
+                : notification.getActorUsername();
+
+        switch (notification.getType()) {
+            case LIKE_POST:
+                return actorName + " đã thích bài viết của bạn";
+            case LIKE_COMMENT:
+                return actorName + " đã thích bình luận của bạn";
+            case COMMENT:
+                return actorName + " đã bình luận về bài viết của bạn";
+            case REPLY_POST:
+                return actorName + " đã phản hồi bài viết của bạn";
+            case REPLY_COMMENT:
+                return actorName + " đã phản hồi bình luận của bạn";
+            case FOLLOW:
+                return actorName + " đã bắt đầu theo dõi bạn";
+            case MENTION_POST:
+                return actorName + " đã nhắc đến bạn trong một bài viết";
+            case MENTION_COMMENT:
+                return actorName + " đã nhắc đến bạn trong một bình luận";
+            case REPOST:
+                return actorName + " đã chia sẻ bài viết của bạn";
+            default:
+                return "Bạn có thông báo mới từ " + actorName;
+        }
+    }
     @Override
     @Transactional
     public NotificationDTO createNotification(CreateNotificationDTO createNotificationDTO) {
@@ -181,6 +260,14 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setCreatedAt(Instant.now());
         
         Notification savedNotification = notificationRepository.save(notification);
+
+        NotificationDTO notificationDTO = convertToDTO(savedNotification);
+        // Tạo message cho push notification
+        String title = generateNotificationTitle(notificationDTO.getType());
+        String body = generateNotificationBody(notificationDTO);
+
+        // Gửi push notification
+        fcmService.sendNotificationToUser(notificationDTO.getUserId(), title, body, notificationDTO.getType(), notificationDTO.getTargetId(), notificationDTO.getActorId());
         
         return convertToDTO(savedNotification);
     }

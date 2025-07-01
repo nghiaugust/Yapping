@@ -7,6 +7,7 @@ const LayoutUser = lazy(() => import('../layouts/LayoutUser'));
 const Home = lazy(() => import('../pages/user/Home'));
 const UserProfile = lazy(() => import('../pages/user/UserProfile'));
 const CreatePostUnified = lazy(() => import('../pages/user/CreatePostUnified'));
+const CreatePostUnified = lazy(() => import('../pages/user/CreatePostUnified'));
 const Resources = lazy(() => import('../pages/user/Resources'));
 const Search = lazy(() => import('../pages/user/Search'));
 const Bookmarks = lazy(() => import('../pages/user/Bookmarks'));

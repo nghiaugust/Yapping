@@ -33,13 +33,13 @@ public class PostDTO {
     @NotNull
     private Post.Visibility visibility;
 
-    private Integer likeCount;
+    private Integer likeCount= 0;
 
-    private Integer commentCount;
+    private Integer commentCount = 0;
 
-    private Integer repostCount;
+    private Integer repostCount= 0;
 
-    private Integer quoteCount;
+    private Integer quoteCount= 0;
 
     private Instant createdAt;
 

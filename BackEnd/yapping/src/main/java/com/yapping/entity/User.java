@@ -59,6 +59,10 @@ public class User {
     @Column(name = "status", nullable = false, length=30)
     private Status status = Status.ACTIVE;
 
+    // Thêm field FCM token
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false) // Không cho phép cập nhật sau khi tạo
     private Instant createdAt;

@@ -12,6 +12,9 @@ export interface UserProfile {
   status: string;
   createdAt: string;
   updatedAt: string;
+  postsCount?: number;
+  followersCount?: number;
+  followingCount?: number;
   roles: {
     id: number;
     name: string;
@@ -32,6 +35,17 @@ export const getCurrentUser = async (): Promise<ApiResponse<UserProfile>> => {
     return response.data;
   } catch (error) {
     console.error('Lỗi khi lấy thông tin người dùng:', error);
+    throw error;
+  }
+};
+
+// Hàm lấy thông tin người dùng theo ID
+export const getUserById = async (userId: number): Promise<ApiResponse<UserProfile>> => {
+  try {
+    const response = await api.get<ApiResponse<UserProfile>>(`/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Lỗi khi lấy thông tin người dùng ${userId}:`, error);
     throw error;
   }
 };

@@ -72,6 +72,23 @@ public class PostController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ApiResponse> getPostsByUserId(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<PostDTO> posts = postService.getPostsByUserId(userId, pageable);
+        ApiResponse response = new ApiResponse(
+                HttpStatus.OK.value(),
+                true,
+                "Lấy danh sách bài đăng của user thành công",
+                posts
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping
     public ResponseEntity<ApiResponse> getPublicPosts(
             @RequestParam(defaultValue = "0") int page,

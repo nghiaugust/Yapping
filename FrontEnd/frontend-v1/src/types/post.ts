@@ -31,6 +31,7 @@ export interface Post {
   updatedAt: string;
   post_type: string | null;
   media: Media[] | null;
+  isLiked?: boolean;
 }
 
 export interface PostPageResponse {

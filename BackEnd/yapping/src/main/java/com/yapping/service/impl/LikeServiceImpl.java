@@ -2,11 +2,9 @@ package com.yapping.service.impl;
 
 import com.yapping.dto.like.CreateLikeDTO;
 import com.yapping.dto.like.LikeDTO;
-import com.yapping.entity.Comment;
-import com.yapping.entity.Like;
+import com.yapping.dto.notification.CreateNotificationDTO;
+import com.yapping.entity.*;
 import com.yapping.entity.Like.TargetType;
-import com.yapping.entity.Post;
-import com.yapping.entity.User;
 import com.yapping.repository.CommentRepository;
 import com.yapping.repository.LikeRepository;
 import com.yapping.repository.PostRepository;
@@ -43,6 +41,9 @@ public class LikeServiceImpl implements LikeService {
     
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private NotificationServiceImpl notificationServiceImpl;
     
     // Chuyển đổi từ entity sang DTO
     private LikeDTO convertToDTO(Like like) {
@@ -262,7 +263,18 @@ public class LikeServiceImpl implements LikeService {
         like.setCreatedAt(Instant.now());
         
         Like savedLike = likeRepository.save(like);
-        
+
+        CreateNotificationDTO createNotificationDTO = new CreateNotificationDTO();
+        createNotificationDTO.setUserId(post.getUser().getId());  // người nhận notification
+        createNotificationDTO.setActorId(userId);                   // người thực hiện action
+        createNotificationDTO.setType(Notification.Type.LIKE_POST);
+        createNotificationDTO.setTargetType(Notification.TargetType.POST);
+        createNotificationDTO.setTargetId(postId);
+        createNotificationDTO.setTargetOwnerId(post.getUser().getId());
+        createNotificationDTO.setMessage("Bạn có một lượt thích mới trên bài đăng của mình");
+        notificationService.createNotification(createNotificationDTO);
+        // Gửi notification nếu người dùng không phải là chủ bài đăng
+
         return convertToDTO(savedLike);
     }
     
@@ -292,7 +304,27 @@ public class LikeServiceImpl implements LikeService {
         like.setCreatedAt(Instant.now());
         
         Like savedLike = likeRepository.save(like);
-        
+        CreateNotificationDTO createNotificationDTO = new CreateNotificationDTO();
+
+        createNotificationDTO.setUserId(comment.getUser().getId());  // người nhận notification
+        createNotificationDTO.setActorId(userId);                   // người thực hiện action
+        createNotificationDTO.setType(Notification.Type.LIKE_COMMENT);
+        createNotificationDTO.setTargetType(Notification.TargetType.COMMENT);
+        createNotificationDTO.setTargetId(commentId);
+        createNotificationDTO.setTargetOwnerId(comment.getUser().getId());
+        createNotificationDTO.setMessage("Bạn có một lượt thích mới trên bình luận của mình");
+        notificationService.createNotification(createNotificationDTO);
+
+//        if (!userId.equals(comment.getUser().getId())) {
+//            notificationServiceImpl.createAndSendNotification(
+//                    comment.getUser().getId(),  // người nhận notification
+//                    userId,                     // người thực hiện action
+//                    Notification.Type.LIKE_COMMENT,
+//                    Notification.TargetType.COMMENT,
+//                    commentId,
+//                    comment.getUser().getId()
+//            );
+//        }
         return convertToDTO(savedLike);
     }
     

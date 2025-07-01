@@ -188,7 +188,7 @@
 ```
 
 ## 6. Lấy tất cả bình luận gốc của một bài đăng
-- **URL**: `/api/comments/post/{postId}/root`
+- **URL**: `/api/comments/post/{postId}`
 - **Method**: `GET`
 - **Auth**: Không yêu cầu
 - **Params**:

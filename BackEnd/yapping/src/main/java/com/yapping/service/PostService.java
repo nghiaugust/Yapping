@@ -15,6 +15,8 @@ public interface PostService {
 
     Page<PostDTO> getPublicPosts(Pageable pageable);
 
+    Page<PostDTO> getPostsByUserId(Long userId, Pageable pageable);
+
     PostDTO updatePost(Long id, PostDTO postDTO, Long userId);    
     
     PostDTO deletePost(Long id, Long userId);

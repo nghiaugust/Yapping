@@ -1,5 +1,6 @@
 package com.yapping.service;
 
+import com.yapping.dto.user.ChangePasswordDTO;
 import com.yapping.dto.user.PatchUserDTO;
 import com.yapping.dto.user.UserDTO;
 
@@ -16,4 +17,5 @@ public interface UserService {
     UserDTO deleteUser(Long userId);
     String assignRoleToUser(Long userId, String roleName); // gán role tai khoan
     String removeRoleFromUser(Long userId, String roleName);// gỡ role tài khoan
+    void changePassword(Long userId, ChangePasswordDTO changePasswordDTO); // đổi mật khẩu
 }

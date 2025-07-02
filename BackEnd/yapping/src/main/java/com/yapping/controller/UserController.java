@@ -2,6 +2,7 @@ package com.yapping.controller;
 
 import com.yapping.dto.ApiResponse;
 import com.yapping.dto.follow.FollowDTO;
+import com.yapping.dto.user.ChangePasswordDTO;
 import com.yapping.dto.user.PatchUserDTO;
 import com.yapping.dto.user.UserDTO;
 import com.yapping.service.UserService;
@@ -216,6 +217,23 @@ public class UserController {
         );
         return ResponseEntity.ok(response);
     }
+
+    // Đổi mật khẩu
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{id}/change-password")
+    public ResponseEntity<ApiResponse> changePassword(
+            @PathVariable Long id, 
+            @Valid @RequestBody ChangePasswordDTO changePasswordDTO) {
+        userService.changePassword(id, changePasswordDTO);
+        ApiResponse response = new ApiResponse(
+                HttpStatus.OK.value(),
+                true,
+                "Đổi mật khẩu thành công",
+                null
+        );
+        return ResponseEntity.ok(response);
+    }
+    
     //follow===================================================================
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/{followedId}/follow")

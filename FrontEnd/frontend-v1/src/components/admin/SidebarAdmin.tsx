@@ -6,9 +6,12 @@ import {
   LogoutOutlined, 
   DashboardOutlined, 
   SettingOutlined,
-  TeamOutlined 
+  TeamOutlined,
+  FileTextOutlined,
+  EditOutlined
 } from "@ant-design/icons";
 import { useState } from "react";
+import "../../assets/styles/sidebar-admin.css";
 
 const { Sider } = Layout;
 const { Text } = Typography;
@@ -39,6 +42,16 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onCollapseChange }) => {
       key: "/admin/accounts",
       icon: <TeamOutlined />,
       label: "Quản Lý Tài Khoản",
+    },
+    {
+      key: "/admin/posts",
+      icon: <EditOutlined />,
+      label: "Quản Lý Bài Đăng",
+    },
+    {
+      key: "/admin/reports",
+      icon: <FileTextOutlined />,
+      label: "Quản Lý Báo Cáo",
     },
     {
       key: "/admin/dashboard",
@@ -127,6 +140,7 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onCollapseChange }) => {
           }}
           theme="light"
           inlineIndent={24}
+          inlineCollapsed={collapsed}
         />
       </div>
 

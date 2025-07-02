@@ -34,6 +34,7 @@ import {
 import { getUserLikes, deleteLike } from '../../service/user/likeService';
 import { formatTimeAgo } from '../../utils/formatDate';
 import { getCurrentUser, UserProfile } from '../../service/user/userService';
+import { getProfilePictureUrl, getMediaUrl } from '../../utils/constants';
 import { Like } from '../../types/like';
 
 const { Title, Text, Paragraph } = Typography;
@@ -446,7 +447,7 @@ const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
           >
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
               <Avatar
-                src={post.user.profilePicture ? `http://localhost:8080/yapping${post.user.profilePicture}` : null}
+                src={getProfilePictureUrl(post.user.profilePicture)}
                 size={40}
                 style={{ marginRight: 12 }}
               >
@@ -496,7 +497,7 @@ const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
                         >
                           {media.mediaType === 'IMAGE' ? (
                             <img
-                              src={`http://localhost:8080/yapping${media.mediaUrl}`}
+                              src={getMediaUrl(media.mediaUrl)}
                               alt="Post media"
                               style={{
                                 width: '100%',
@@ -506,7 +507,7 @@ const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
                             />
                           ) : (
                             <video
-                              src={`http://localhost:8080/yapping${media.mediaUrl}`}
+                              src={getMediaUrl(media.mediaUrl)}
                               style={{
                                 width: '100%',
                                 height: '100%',
@@ -543,7 +544,7 @@ const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
                 <List.Item style={{ padding: '12px 0', border: 'none' }}>
                   <div style={{ width: '100%' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start' }}>                      <Avatar
-                        src={comment.userProfilePicture ? `http://localhost:8080/yapping${comment.userProfilePicture}` : null}
+                        src={getProfilePictureUrl(comment.userProfilePicture)}
                         size={32}
                         style={{ marginRight: 12 }}
                       >
@@ -653,7 +654,7 @@ const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             {currentUser && (
               <Avatar
-                src={currentUser.profilePicture ? `http://localhost:8080/yapping${currentUser.profilePicture}` : null}
+                src={getProfilePictureUrl(currentUser.profilePicture)}
                 size={32}
               >
                 {!currentUser.profilePicture && currentUser.fullName.charAt(0).toUpperCase()}

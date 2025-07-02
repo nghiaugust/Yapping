@@ -326,4 +326,107 @@ public class PostServiceImpl implements PostService {
         
         return toPostDTO(updatedPost);
     }
+
+    // Admin methods implementation
+    @Override
+    public Page<PostDTO> getAllPostsForAdmin(Pageable pageable, Post.Visibility visibility, Post.Type postType) {
+        Page<Post> posts;
+        
+        if (visibility != null && postType != null) {
+            posts = postRepository.findByVisibilityAndPostType(visibility, postType, pageable);
+        } else if (visibility != null) {
+            posts = postRepository.findByVisibility(visibility, pageable);
+        } else if (postType != null) {
+            posts = postRepository.findByPostType(postType, pageable);
+        } else {
+            posts = postRepository.findAll(pageable);
+        }
+        
+        return posts.map(this::toPostDTO);
+    }
+
+    @Override
+    public Optional<PostDTO> getPostByIdForAdmin(Long id) {
+        Optional<Post> post = postRepository.findById(id);
+        return post.map(this::toPostDTO);
+    }
+
+    @Override
+    public com.yapping.dto.post.PostDTO updatePostVisibilityByAdmin(Long id, Post.Visibility visibility) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bài đăng với ID: " + id));
+        
+        post.setVisibility(visibility);
+        Post updatedPost = postRepository.save(post);
+        
+        return toPostDTO(updatedPost);
+    }
+
+    @Override
+    public com.yapping.dto.post.PostDTO deletePostByAdmin(Long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bài đăng với ID: " + id));
+        
+        PostDTO postDTO = toPostDTO(post);
+        
+        // Xóa media files trước
+        List<Media> mediaList = mediaRepository.findByPostId(id);
+        for (Media media : mediaList) {
+            try {
+                fileStorageService.deleteFile(media.getMediaUrl());
+            } catch (IOException e) {
+                // Log error but continue with deletion
+                System.err.println("Error deleting media file: " + e.getMessage());
+            }
+        }
+        
+        // Xóa bài đăng (cascade sẽ xóa media records)
+        postRepository.delete(post);
+        
+        return postDTO;
+    }
+
+    @Override
+    public com.yapping.dto.post.PostStatisticsDTO getPostStatistics() {
+        Long totalPosts = postRepository.count();
+        Long totalTextPosts = postRepository.countByPostType(Post.Type.TEXT);
+        Long totalResourcePosts = postRepository.countByPostType(Post.Type.RESOURCE);
+        
+        Long publicPosts = postRepository.countByVisibility(Post.Visibility.PUBLIC);
+        Long followersOnlyPosts = postRepository.countByVisibility(Post.Visibility.FOLLOWERS_ONLY);
+        Long privatePosts = postRepository.countByVisibility(Post.Visibility.PRIVATE);
+        
+        Long postsWithMedia = postRepository.countPostsWithMedia();
+        Long totalLikes = postRepository.sumAllLikes();
+        Long totalComments = postRepository.sumAllComments();
+        Long totalReposts = postRepository.sumAllReposts();
+
+        Double averageInteraction = totalPosts > 0 ?
+                ((double) (totalLikes + totalComments + totalReposts)) / totalPosts : 0.0;
+        
+        Double publicPercentage = totalPosts > 0 ? (publicPosts.doubleValue() / totalPosts) * 100 : 0.0;
+        Double followersOnlyPercentage = totalPosts > 0 ? (followersOnlyPosts.doubleValue() / totalPosts) * 100 : 0.0;
+        Double privatePercentage = totalPosts > 0 ? (privatePosts.doubleValue() / totalPosts) * 100 : 0.0;
+        Double textPostPercentage = totalPosts > 0 ? (totalTextPosts.doubleValue() / totalPosts) * 100 : 0.0;
+        Double resourcePostPercentage = totalPosts > 0 ? (totalResourcePosts.doubleValue() / totalPosts) * 100 : 0.0;
+        
+        // Tính thời gian
+        java.time.Instant now = java.time.Instant.now();
+        java.time.Instant startOfToday = now.truncatedTo(java.time.temporal.ChronoUnit.DAYS);
+        java.time.Instant startOfWeek = now.minus(7, java.time.temporal.ChronoUnit.DAYS);
+        java.time.Instant startOfMonth = now.minus(30, java.time.temporal.ChronoUnit.DAYS);
+        
+        Long todayPosts = postRepository.countPostsToday(startOfToday);
+        Long weekPosts = postRepository.countPostsThisWeek(startOfWeek);
+        Long monthPosts = postRepository.countPostsThisMonth(startOfMonth);
+        
+        return new com.yapping.dto.post.PostStatisticsDTO(
+            totalPosts, totalTextPosts, totalResourcePosts,
+            publicPosts, followersOnlyPosts, privatePosts,
+            postsWithMedia, totalLikes, totalComments, totalReposts,
+            averageInteraction, publicPercentage, followersOnlyPercentage,
+            privatePercentage, textPostPercentage, resourcePostPercentage,
+            todayPosts, weekPosts, monthPosts
+        );
+    }
 }

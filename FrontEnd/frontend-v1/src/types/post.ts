@@ -34,6 +34,28 @@ export interface Post {
   isLiked?: boolean; // Frontend only field
 }
 
+export interface PostStatistics {
+  totalPosts: number;
+  totalTextPosts: number;
+  totalResourcePosts: number;
+  publicPosts: number;
+  followersOnlyPosts: number;
+  privatePosts: number;
+  postsWithMedia: number;
+  totalLikes: number;
+  totalComments: number;
+  totalReposts: number;
+  averageInteraction: number;
+  publicPercentage: number;
+  followersOnlyPercentage: number;
+  privatePercentage: number;
+  textPostPercentage: number;
+  resourcePostPercentage: number;
+  todayPosts: number;
+  weekPosts: number;
+  monthPosts: number;
+}
+
 export interface PostPageResponse {
   content: Post[];
   pageable: {

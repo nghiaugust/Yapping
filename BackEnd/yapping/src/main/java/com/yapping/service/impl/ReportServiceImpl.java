@@ -2,8 +2,12 @@ package com.yapping.service.impl;
 
 import com.yapping.dto.report.CreateReportDTO;
 import com.yapping.dto.report.ReportDTO;
+import com.yapping.entity.Comment;
+import com.yapping.entity.Post;
 import com.yapping.entity.Report;
 import com.yapping.entity.User;
+import com.yapping.repository.CommentRepository;
+import com.yapping.repository.PostRepository;
 import com.yapping.repository.ReportRepository;
 import com.yapping.repository.UserRepository;
 import com.yapping.service.ReportService;
@@ -15,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +27,9 @@ import java.util.stream.Collectors;
 public class ReportServiceImpl implements ReportService {
 
     private final ReportRepository reportRepository;
-    private final UserRepository userRepository;    @Override
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;    @Override
     @Transactional
     public ReportDTO createReport(CreateReportDTO createReportDTO, Long reporterId) {
         // Kiểm tra người dùng tồn tại
@@ -113,6 +120,36 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<ReportDTO> getReportsWithFilters(Report.Status status, Report.TargetType targetType, Pageable pageable) {
+        Page<Report> reports;
+        
+        if (status != null && targetType != null) {
+            // Lọc theo cả status và targetType
+            reports = reportRepository.findByStatusAndTargetType(status, targetType, pageable);
+        } else if (status != null) {
+            // Chỉ lọc theo status
+            reports = reportRepository.findByStatus(status, pageable);
+        } else if (targetType != null) {
+            // Chỉ lọc theo targetType
+            reports = reportRepository.findByTargetType(targetType, pageable);
+        } else {
+            // Không lọc gì, lấy tất cả
+            reports = reportRepository.findAll(pageable);
+        }
+        
+        return reports.map(report -> {
+            String username = null;
+            if (report.getReporterId() != null) {
+                username = userRepository.findById(report.getReporterId())
+                        .map(User::getUsername)
+                        .orElse(null);
+            }
+            return mapToDTO(report, username);
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<ReportDTO> getReportsByReason(Report.Reason reason, Pageable pageable) {
         return reportRepository.findByReason(reason, pageable)
                 .map(report -> {
@@ -129,10 +166,19 @@ public class ReportServiceImpl implements ReportService {
     @Override
     @Transactional
     public ReportDTO updateReportStatus(Long reportId, Report.Status newStatus) {
+        return updateReportStatusWithNotes(reportId, newStatus, null);
+    }
+
+    @Override
+    @Transactional
+    public ReportDTO updateReportStatusWithNotes(Long reportId, Report.Status newStatus, String adminNotes) {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy báo cáo với ID: " + reportId));
         
         report.setStatus(newStatus);
+        if (adminNotes != null) {
+            report.setAdminNotes(adminNotes);
+        }
         Report updatedReport = reportRepository.save(report);
         
         String username = null;
@@ -177,9 +223,36 @@ public class ReportServiceImpl implements ReportService {
         return reportRepository.countByTargetTypeAndTargetId(targetType, targetId);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getReportStatistics() {
+        long totalReports = reportRepository.count();
+        long pendingReports = reportRepository.countByStatus(Report.Status.PENDING);
+        long reviewingReports = reportRepository.countByStatus(Report.Status.REVIEWING);
+        long resolvedActionTakenReports = reportRepository.countByStatus(Report.Status.RESOLVED_ACTION_TAKEN);
+        long resolvedNoActionReports = reportRepository.countByStatus(Report.Status.RESOLVED_NO_ACTION);
+        
+        // Thống kê theo thời gian (tuần này và tháng này)
+        // Bạn có thể thêm logic phức tạp hơn ở đây
+        long reportsThisWeek = reportRepository.countReportsFromLastWeek();
+        long reportsThisMonth = reportRepository.countReportsFromLastMonth();
+        
+        Map<String, Object> stats = Map.of(
+            "totalReports", totalReports,
+            "pendingReports", pendingReports,
+            "reviewingReports", reviewingReports,
+            "resolvedReports", resolvedActionTakenReports,
+            "dismissedReports", resolvedNoActionReports,
+            "reportsThisWeek", reportsThisWeek,
+            "reportsThisMonth", reportsThisMonth
+        );
+        
+        return stats;
+    }
+
     // Phương thức hỗ trợ chuyển đổi từ đối tượng Report sang ReportDTO
     private ReportDTO mapToDTO(Report report, String reporterUsername) {
-        return ReportDTO.builder()
+        ReportDTO.ReportDTOBuilder builder = ReportDTO.builder()
                 .id(report.getId())
                 .reporterId(report.getReporterId())
                 .reporterUsername(reporterUsername)
@@ -190,6 +263,28 @@ public class ReportServiceImpl implements ReportService {
                 .status(report.getStatus())
                 .createdAt(report.getCreatedAt())
                 .updatedAt(report.getUpdatedAt())
-                .build();
+                .adminNotes(report.getAdminNotes());
+        
+        // Lấy thông tin chi tiết về đối tượng bị báo cáo
+        try {
+            if (report.getTargetType() == Report.TargetType.POST) {
+                postRepository.findById(report.getTargetId()).ifPresent(post -> {
+                    builder.targetContent(post.getContent())
+                           .targetAuthorId(post.getUser().getId())
+                           .targetAuthorUsername(post.getUser().getUsername());
+                });
+            } else if (report.getTargetType() == Report.TargetType.COMMENT) {
+                commentRepository.findById(report.getTargetId()).ifPresent(comment -> {
+                    builder.targetContent(comment.getContent())
+                           .targetAuthorId(comment.getUser().getId())
+                           .targetAuthorUsername(comment.getUser().getUsername());
+                });
+            }
+        } catch (Exception e) {
+            // Nếu không thể lấy thông tin (đối tượng đã bị xóa), để giá trị null
+            System.err.println("Không thể lấy thông tin chi tiết cho report " + report.getId() + ": " + e.getMessage());
+        }
+        
+        return builder.build();
     }
 }

@@ -25,7 +25,7 @@ public class UserDTO {
     @NotNull
     @Email
     private String email;
-    @Size(min = 8, max = 255)
+    @Size(min = 6, max = 255)
     private String password; // Chỉ dùng khi tạo/cập nhật user
     @Size(max = 100)
     private String fullName;

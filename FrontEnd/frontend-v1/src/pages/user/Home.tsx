@@ -7,6 +7,7 @@ import { getCurrentUser } from "../../service/user/userService";
 import { Post } from "../../types/post";
 import { Like } from "../../types/like";
 import { formatTimeAgo } from "../../utils/formatDate";
+import { getProfilePictureUrl, getMediaUrl } from "../../utils/constants";
 import PostCommentsModal from "../../components/user/PostCommentsModal";
 import "../../assets/styles/modal.css";
 
@@ -444,7 +445,7 @@ const Home: React.FC = () => {
                   >
                     <div style={{ display: "flex", alignItems: "flex-start" }}>
                       <Avatar
-                        src={post.user.profilePicture ? `http://localhost:8080/yapping${post.user.profilePicture}` : null}
+                        src={getProfilePictureUrl(post.user.profilePicture)}
                         size={40}
                         style={{ marginRight: 12 }}
                       >
@@ -511,7 +512,7 @@ const Home: React.FC = () => {
                                 >
                                   {media.mediaType.toLowerCase() === 'image' ? (
                                     <img
-                                      src={`http://localhost:8080/yapping${media.mediaUrl}`}
+                                      src={getMediaUrl(media.mediaUrl)}
                                       alt="Media content"
                                       style={{
                                         width: '100%',
@@ -523,7 +524,7 @@ const Home: React.FC = () => {
                                   ) : media.mediaType.toLowerCase() === 'video' ? (
                                     <>
                                       <video
-                                        src={`http://localhost:8080/yapping${media.mediaUrl}`}
+                                        src={getMediaUrl(media.mediaUrl)}
                                         style={{
                                           width: '100%',
                                           height: '100%',
@@ -685,13 +686,13 @@ const Home: React.FC = () => {
             }}>
               {selectedMedia.type === "image" ? (
                 <img
-                  src={`http://localhost:8080/yapping${selectedMedia.url}`}
+                  src={getMediaUrl(selectedMedia.url)}
                   alt="Full media"
                   style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain" }}
                 />
               ) : selectedMedia.type === "video" ? (
                 <video
-                  src={`http://localhost:8080/yapping${selectedMedia.url}`}
+                  src={getMediaUrl(selectedMedia.url)}
                   controls
                   autoPlay
                   style={{ maxWidth: "100%", maxHeight: "80vh" }}

@@ -61,6 +61,38 @@
   font-weight: 600;
 }
 
+/* Special styling for Reports menu item */
+.sidebar-menu .ant-menu-item[data-key="/admin/reports"] {
+  background: rgba(255, 120, 117, 0.05) !important;
+  border: 1px solid rgba(255, 120, 117, 0.1);
+}
+
+.sidebar-menu .ant-menu-item[data-key="/admin/reports"]:hover {
+  background: rgba(255, 120, 117, 0.1) !important;
+  border: 1px solid rgba(255, 120, 117, 0.25);
+  color: #ff7875 !important;
+}
+
+.sidebar-menu .ant-menu-item[data-key="/admin/reports"]:hover .anticon {
+  color: #ff7875 !important;
+}
+
+.sidebar-menu .ant-menu-item[data-key="/admin/reports"]:hover span {
+  color: #ff7875 !important;
+}
+
+.sidebar-menu .ant-menu-item-selected[data-key="/admin/reports"] {
+  background: linear-gradient(135deg, rgba(255, 120, 117, 0.15), rgba(255, 169, 64, 0.1)) !important;
+  color: #ff7875 !important;
+  border: 1px solid rgba(255, 120, 117, 0.3);
+  border-left: 4px solid #ff7875 !important;
+}
+
+.sidebar-menu .ant-menu-item-selected[data-key="/admin/reports"] .anticon,
+.sidebar-menu .ant-menu-item-selected[data-key="/admin/reports"] span {
+  color: #ff7875 !important;
+}
+
 /* Admin Table Styles */
 .admin-table .ant-table-thead > tr > th {
   background: linear-gradient(135deg, #f8faff, #f1f5ff);

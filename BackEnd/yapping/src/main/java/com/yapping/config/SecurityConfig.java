@@ -64,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/notifications/**").authenticated()
                         .requestMatchers("/api/reposts/**").authenticated()
                         .requestMatchers("/api/reports/**").authenticated()
+                        .requestMatchers("/api/admin/posts/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

@@ -56,13 +56,44 @@ public class ReportController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String targetType) {
         
         Sort.Direction direction = sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
-        // Sử dụng phương thức lọc từ service
-        Page<ReportDTO> reports = reportService.getReportsByStatus(null, pageable);
+        // Convert string parameters to enums
+        Report.Status statusEnum = null;
+        if (status != null && !status.isEmpty()) {
+            try {
+                statusEnum = Report.Status.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(new ApiResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    false,
+                    "Invalid status value: " + status,
+                    null
+                ));
+            }
+        }
+        
+        Report.TargetType targetTypeEnum = null;
+        if (targetType != null && !targetType.isEmpty()) {
+            try {
+                targetTypeEnum = Report.TargetType.valueOf(targetType.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(new ApiResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    false,
+                    "Invalid targetType value: " + targetType,
+                    null
+                ));
+            }
+        }
+        
+        // Use filtered method from service
+        Page<ReportDTO> reports = reportService.getReportsWithFilters(statusEnum, targetTypeEnum, pageable);
         
         ApiResponse response = new ApiResponse(
                 HttpStatus.OK.value(),
@@ -219,22 +250,43 @@ public class ReportController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/{id}/status")
+    @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse> updateReportStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> statusUpdate) {
         
-        Report.Status newStatus = Report.Status.valueOf(statusUpdate.get("status"));
-        ReportDTO updatedReport = reportService.updateReportStatus(id, newStatus);
+        String statusStr = statusUpdate.get("status");
+        String adminNotes = statusUpdate.get("adminNotes");
         
-        ApiResponse response = new ApiResponse(
-                HttpStatus.OK.value(),
-                true,
-                "Trạng thái báo cáo đã được cập nhật thành công",
-                updatedReport
-        );
+        if (statusStr == null || statusStr.isEmpty()) {
+            return ResponseEntity.badRequest().body(new ApiResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                false,
+                "Status is required",
+                null
+            ));
+        }
         
-        return ResponseEntity.ok(response);
+        try {
+            Report.Status newStatus = Report.Status.valueOf(statusStr.toUpperCase());
+            ReportDTO updatedReport = reportService.updateReportStatusWithNotes(id, newStatus, adminNotes);
+            
+            ApiResponse response = new ApiResponse(
+                    HttpStatus.OK.value(),
+                    true,
+                    "Trạng thái báo cáo đã được cập nhật thành công",
+                    updatedReport
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                false,
+                "Invalid status value: " + statusStr,
+                null
+            ));
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -265,6 +317,21 @@ public class ReportController {
                 true,
                 "Số lượng báo cáo cho " + targetType + " với ID " + targetId + " đã được truy xuất thành công",
                 Map.of("count", count)
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/statistics")
+    public ResponseEntity<ApiResponse> getReportStatistics() {
+        Map<String, Object> stats = reportService.getReportStatistics();
+        
+        ApiResponse response = new ApiResponse(
+                HttpStatus.OK.value(),
+                true,
+                "Thống kê báo cáo đã được truy xuất thành công",
+                stats
         );
         
         return ResponseEntity.ok(response);

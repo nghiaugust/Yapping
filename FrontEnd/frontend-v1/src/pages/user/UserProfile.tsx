@@ -9,6 +9,7 @@ import { Post } from '../../types/post';
 import { Repost } from '../../service/user/repostService';
 import { Notification } from '../../service/user/notificationService';
 import { formatTimeAgo } from '../../utils/formatDate';
+import { getProfilePictureUrl, getMediaUrl } from '../../utils/constants';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -133,7 +134,7 @@ const UserProfile = () => {
                 >
                   <div style={{ display: "flex", alignItems: "flex-start" }}>
                     <Avatar
-                      src={user?.profilePicture ? `http://localhost:8080/yapping${user.profilePicture}` : null}
+                      src={getProfilePictureUrl(user?.profilePicture)}
                       size={40}
                       style={{ marginRight: 12 }}
                     >
@@ -190,7 +191,7 @@ const UserProfile = () => {
                               >
                                 {media.mediaType === 'IMAGE' ? (
                                   <img
-                                    src={`http://localhost:8080/yapping${media.mediaUrl}`}
+                                    src={getMediaUrl(media.mediaUrl)}
                                     alt="Post media"
                                     style={{
                                       width: '100%',
@@ -200,7 +201,7 @@ const UserProfile = () => {
                                   />
                                 ) : (
                                   <video
-                                    src={`http://localhost:8080/yapping${media.mediaUrl}`}
+                                    src={getMediaUrl(media.mediaUrl)}
                                     style={{
                                       width: '100%',
                                       height: '100%',
@@ -274,7 +275,7 @@ const UserProfile = () => {
                   }}>
                     <div style={{ display: "flex", alignItems: "flex-start" }}>
                       <Avatar
-                        src={repost.post.user?.profilePicture ? `http://localhost:8080/yapping${repost.post.user.profilePicture}` : null}
+                        src={getProfilePictureUrl(repost.post.user?.profilePicture)}
                         size={32}
                         style={{ marginRight: 8 }}
                       >
@@ -331,7 +332,7 @@ const UserProfile = () => {
                                 >
                                   {media.mediaType === 'IMAGE' ? (
                                     <img
-                                      src={`http://localhost:8080/yapping${media.mediaUrl}`}
+                                      src={getMediaUrl(media.mediaUrl)}
                                       alt="Post media"
                                       style={{
                                         width: '100%',
@@ -341,7 +342,7 @@ const UserProfile = () => {
                                     />
                                   ) : (
                                     <video
-                                      src={`http://localhost:8080/yapping${media.mediaUrl}`}
+                                      src={getMediaUrl(media.mediaUrl)}
                                       style={{
                                         width: '100%',
                                         height: '100%',
@@ -502,7 +503,7 @@ const UserProfile = () => {
         }}>
           <div style={{ display: "flex", alignItems: "center", marginBottom: "24px" }}>
             <Avatar
-              src={user.profilePicture ? `http://localhost:8080/yapping${user.profilePicture}` : null}
+              src={getProfilePictureUrl(user.profilePicture)}
               size={80}
               style={{ marginRight: "20px", border: "4px solid #8860D0" }}
             >

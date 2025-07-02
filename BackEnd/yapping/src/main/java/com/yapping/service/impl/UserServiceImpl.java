@@ -1,5 +1,6 @@
 package com.yapping.service.impl;
 
+import com.yapping.dto.user.ChangePasswordDTO;
 import com.yapping.dto.user.PatchUserDTO;
 import com.yapping.dto.user.RoleDTO;
 import com.yapping.dto.user.UserDTO;
@@ -56,7 +57,8 @@ public class UserServiceImpl implements UserService {
         //dang sau la danh sach cac thuoc tinh se bo qua khi tao o đay userDTO la nguon, user la dich
         if (userDTO.getPassword() != null) {
             user.setPasswordHash(passwordEncoder.encode(userDTO.getPassword()));
-        }user.setPasswordHash(passwordEncoder.encode(userDTO.getPassword()));
+        }
+        user.setPasswordHash(passwordEncoder.encode(userDTO.getPassword()));
         user.setIsVerified(false);// mac dinh chua co tich xanh
         user.setStatus(User.Status.PENDING_VERIFICATION);// chờ xác nhận từ mail
 
@@ -84,7 +86,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> findAllUsers() {
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findAllByOrderByCreatedAtDesc();
         if (users.isEmpty()) {
             return new ArrayList<>();
         }
@@ -325,5 +327,22 @@ public class UserServiceImpl implements UserService {
         // Gán danh sách RoleDTO vào UserDTO
         userDTO.setRoles(roleDTOs);
         return userDTO;
+    }
+    
+    @Override
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordDTO changePasswordDTO) {
+        // Tìm user theo ID
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
+        
+        // Mã hóa mật khẩu mới
+        String encodedPassword = passwordEncoder.encode(changePasswordDTO.getNewPassword());
+        
+        // Cập nhật mật khẩu
+        user.setPasswordHash(encodedPassword);
+        
+        // Lưu user
+        userRepository.save(user);
     }
 }

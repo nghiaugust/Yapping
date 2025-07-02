@@ -71,6 +71,10 @@ public class Report {
     @Column(name = "status", nullable = false)
     private Status status = Status.PENDING; // Đặt giá trị mặc định trong Java
 
+    @Lob
+    @Column(name = "admin_notes", columnDefinition = "TEXT")
+    private String adminNotes; // Ghi chú của admin khi xử lý báo cáo
+
     @CreationTimestamp // Tự động đặt khi tạo
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt; // Thời gian tạo

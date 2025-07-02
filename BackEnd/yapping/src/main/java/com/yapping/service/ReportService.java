@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ReportService {
     // Tạo một báo cáo mới
@@ -24,11 +25,17 @@ public interface ReportService {
     // Lấy danh sách báo cáo theo trạng thái
     Page<ReportDTO> getReportsByStatus(Report.Status status, Pageable pageable);
     
+    // Lấy danh sách báo cáo với filter
+    Page<ReportDTO> getReportsWithFilters(Report.Status status, Report.TargetType targetType, Pageable pageable);
+    
     // Lấy danh sách báo cáo theo lý do
     Page<ReportDTO> getReportsByReason(Report.Reason reason, Pageable pageable);
     
     // Cập nhật trạng thái báo cáo
     ReportDTO updateReportStatus(Long reportId, Report.Status newStatus);
+    
+    // Cập nhật trạng thái báo cáo với ghi chú admin
+    ReportDTO updateReportStatusWithNotes(Long reportId, Report.Status newStatus, String adminNotes);
     
     // Xóa báo cáo
     void deleteReport(Long reportId);
@@ -38,4 +45,7 @@ public interface ReportService {
     
     // Đếm số báo cáo cho một đối tượng
     Long countReportsByTarget(Report.TargetType targetType, Long targetId);
+    
+    // Lấy thống kê báo cáo
+    Map<String, Object> getReportStatistics();
 }

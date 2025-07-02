@@ -25,6 +25,10 @@ interface UpdateUserData {
   status?: "ACTIVE" | "SUSPENDED" | "DELETED" | "PENDING_VERIFICATION";
 }
 
+interface ChangePasswordData {
+  newPassword: string;
+}
+
 // Lấy danh sách tài khoản
 export const getUsers = async (): Promise<User[]> => {
   const response = await api.get<ApiResponse<User[]>>("/users");
@@ -39,7 +43,7 @@ export const getUserById = async (id: number): Promise<User> => {
 
 // Tạo tài khoản mới
 export const createUser = async (data: CreateUserData): Promise<User> => {
-  const response = await api.post<ApiResponse<User>>("/users", data);
+  const response = await api.post<ApiResponse<User>>("/users/register", data);
   return response.data.data;
 };
 
@@ -52,4 +56,9 @@ export const updateUser = async (id: number, data: UpdateUserData): Promise<User
 // Xóa tài khoản
 export const deleteUser = async (id: number): Promise<void> => {
   await api.delete(`/users/${id}`);
+};
+
+// Đổi mật khẩu
+export const changePassword = async (id: number, data: ChangePasswordData): Promise<void> => {
+  await api.post(`/users/${id}/change-password`, data);
 };

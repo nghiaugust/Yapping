@@ -4,6 +4,7 @@ import { Avatar, Typography, Space, Divider, Button, Tooltip } from 'antd';
 import { UserOutlined, CheckCircleFilled, LogoutOutlined, SettingOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile } from '../../service/user/userService';
+import { getProfilePictureUrl } from '../../utils/constants';
 
 const { Text, Paragraph } = Typography;
 
@@ -21,7 +22,7 @@ const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({ user, loading, 
       {user ? (
         <>
           <div style={{ textAlign: 'center', padding: '8px 0' }}>            <Avatar 
-              src={user.profilePicture ? `http://localhost:8080/yapping/uploads/profile-pictures/${user.profilePicture.split('/').pop()}` : undefined}
+              src={getProfilePictureUrl(user.profilePicture)}
               icon={!user.profilePicture && <UserOutlined />}
               size={64}
               style={{ 

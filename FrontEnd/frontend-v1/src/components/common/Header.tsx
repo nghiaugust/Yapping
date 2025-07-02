@@ -7,6 +7,7 @@ import Followers from "../user/Followers";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getCurrentUser, UserProfile } from "../../service/user/userService";
+import { getProfilePictureUrl } from "../../utils/constants";
 import UserProfilePopover from "../user/UserProfilePopover";
 
 interface HeaderProps {
@@ -133,7 +134,7 @@ const Header: React.FC<HeaderProps> = ({ onRefreshContent }) => {
               {currentUser?.fullName ?? "User"}
             </span>
             <div style={{ position: 'relative' }}>              <Avatar
-                src={currentUser?.profilePicture ? `http://localhost:8080/yapping/uploads/profile-pictures/${currentUser.profilePicture.split('/').pop()}` : undefined}
+                src={getProfilePictureUrl(currentUser?.profilePicture)}
                 icon={!currentUser?.profilePicture && <UserOutlined />}
                 size={40}
                 style={{ border: "2px solid #8860D0", cursor: "pointer", backgroundColor: "#C1C8E4" }}

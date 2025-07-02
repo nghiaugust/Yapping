@@ -2,6 +2,7 @@
 import { Modal, Button, Tag, Avatar } from "antd";
 import { User} from "../../../types/user";
 import { UserOutlined, CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { getProfilePictureUrl } from "../../../utils/constants";
 import moment from "moment";
 
 interface AccountDetailModalProps {
@@ -68,7 +69,7 @@ const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               <Avatar 
                 size={64} 
-                src={account.profilePicture}
+                src={getProfilePictureUrl(account.profilePicture)}
                 icon={<UserOutlined />}
                 style={{
                   border: "3px solid rgba(255, 255, 255, 0.3)",

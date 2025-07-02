@@ -4,87 +4,48 @@
 export interface Report {
   id: number;
   reporterId: number;
-  reportedUserId?: number;
-  postId?: number;
-  commentId?: number;
-  reason: string;
+  reporterUsername?: string;
+  targetType: 'POST' | 'COMMENT';
+  targetId: number;
+  reason: 'SPAM' | 'HARASSMENT' | 'HATE_SPEECH' | 'INAPPROPRIATE_CONTENT' | 'INTELLECTUAL_PROPERTY' | 'MISINFORMATION' | 'OTHER';
   description?: string;
-  status: "PENDING" | "REVIEWED" | "RESOLVED" | "DISMISSED";
+  status: 'PENDING' | 'REVIEWING' | 'RESOLVED_ACTION_TAKEN' | 'RESOLVED_NO_ACTION';
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ReportWithDetails extends Report {
-  reporter: {
-    id: number;
-    username: string;
-    fullName: string;
-    profilePicture?: string;
-  };
-  reportedUser?: {
-    id: number;
-    username: string;
-    fullName: string;
-    profilePicture?: string;
-  };
-  post?: {
-    id: number;
-    content: string;
-    user: {
-      id: number;
-      username: string;
-      fullName: string;
-    };
-  };
-  comment?: {
-    id: number;
-    content: string;
-    user: {
-      id: number;
-      username: string;
-      fullName: string;
-    };
-  };
+  targetContent?: string;
+  targetAuthorId?: number;
+  targetAuthorUsername?: string;
+  adminNotes?: string;
 }
 
 export interface CreateReportRequest {
-  reportedUserId?: number;
-  postId?: number;
-  commentId?: number;
-  reason: string;
+  targetType: 'POST' | 'COMMENT';
+  targetId: number;
+  reason: 'SPAM' | 'HARASSMENT' | 'HATE_SPEECH' | 'INAPPROPRIATE_CONTENT' | 'INTELLECTUAL_PROPERTY' | 'MISINFORMATION' | 'OTHER';
   description?: string;
 }
 
 export interface UpdateReportRequest {
-  status: "PENDING" | "REVIEWED" | "RESOLVED" | "DISMISSED";
-  adminNote?: string;
+  status: 'PENDING' | 'REVIEWING' | 'RESOLVED_ACTION_TAKEN' | 'RESOLVED_NO_ACTION';
+  adminNotes?: string;
 }
 
 export interface ReportPageResponse {
-  content: ReportWithDetails[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
-    sort: {
-      empty: boolean;
-      sorted: boolean;
-      unsorted: boolean;
-    };
-    offset: number;
-    paged: boolean;
-    unpaged: boolean;
-  };
-  last: boolean;
+  content: Report[];
   totalElements: number;
   totalPages: number;
-  size: number;
   number: number;
-  sort: {
-    empty: boolean;
-    sorted: boolean;
-    unsorted: boolean;
-  };
+  size: number;
   first: boolean;
-  numberOfElements: number;
-  empty: boolean;
+  last: boolean;
+}
+
+export interface ApiResponse<T> {
+  status: number;
+  success: boolean;
+  message: string;
+  data: T;
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import AccountDetailModal from '../../components/admin/account/AccountDetailModal';
 import CreateAccountModal from '../../components/admin/account/CreateAccountModal';
+import EditAccountModal from '../../components/admin/account/EditAccountModal';
 import * as adminUserService from '../../service/admin/userService';
 import { User, Role } from '../../types/user';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +22,7 @@ const AccountManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
@@ -106,6 +108,16 @@ const AccountManagement: React.FC = () => {
 
   const handleCloseCreateModal = (): void => {
     setIsCreateModalVisible(false);
+  };
+
+  const handleOpenEditModal = (account: User): void => {
+    setSelectedAccount(account);
+    setIsEditModalVisible(true);
+  };
+
+  const handleCloseEditModal = (): void => {
+    setIsEditModalVisible(false);
+    setSelectedAccount(null);
   };
 
   const columns = [
@@ -220,7 +232,7 @@ const AccountManagement: React.FC = () => {
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              message.info(`Chỉnh sửa tài khoản: ${record.username}`);
+              handleOpenEditModal(record);
             }}
           />
           <Popconfirm
@@ -380,6 +392,14 @@ const AccountManagement: React.FC = () => {
       <CreateAccountModal
         visible={isCreateModalVisible}
         onClose={handleCloseCreateModal}
+        onSuccess={() => {
+          void fetchUsers();
+        }}
+      />
+      <EditAccountModal
+        visible={isEditModalVisible}
+        account={selectedAccount}
+        onClose={handleCloseEditModal}
         onSuccess={() => {
           void fetchUsers();
         }}

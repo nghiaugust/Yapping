@@ -31,4 +31,40 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @EntityGraph(attributePaths = {"user"})
     Page<Post> findByVisibility(Post.Visibility visibility, Pageable pageable);
+    
+    // Admin methods
+    @EntityGraph(attributePaths = {"user"})
+    @Query("SELECT p FROM Post p WHERE p.post_type = :postType")
+    Page<Post> findByPostType(@Param("postType") Post.Type postType, Pageable pageable);
+    
+    @EntityGraph(attributePaths = {"user"})
+    @Query("SELECT p FROM Post p WHERE p.visibility = :visibility AND p.post_type = :postType")
+    Page<Post> findByVisibilityAndPostType(@Param("visibility") Post.Visibility visibility, @Param("postType") Post.Type postType, Pageable pageable);
+    
+    // Thống kê methods
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.post_type = :postType")
+    Long countByPostType(@Param("postType") Post.Type postType);
+    
+    Long countByVisibility(Post.Visibility visibility);
+    
+    @Query("SELECT COUNT(DISTINCT p.id) FROM Post p WHERE EXISTS (SELECT 1 FROM Media m WHERE m.post.id = p.id)")
+    Long countPostsWithMedia();
+    
+    @Query("SELECT COALESCE(SUM(p.likeCount), 0) FROM Post p")
+    Long sumAllLikes();
+    
+    @Query("SELECT COALESCE(SUM(p.commentCount), 0) FROM Post p")
+    Long sumAllComments();
+    
+    @Query("SELECT COALESCE(SUM(p.repostCount), 0) FROM Post p")
+    Long sumAllReposts();
+    
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.createdAt >= :start")
+    Long countPostsToday(@Param("start") Instant start);
+    
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.createdAt >= :weekStart")
+    Long countPostsThisWeek(@Param("weekStart") Instant weekStart);
+    
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.createdAt >= :monthStart")
+    Long countPostsThisMonth(@Param("monthStart") Instant monthStart);
 }

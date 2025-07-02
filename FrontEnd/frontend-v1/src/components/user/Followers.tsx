@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { getFollowing } from "../../service/user/followService";
 import { getUserById } from "../../service/user/userService";
 import { Follow, FollowUser } from "../../types/follow";
+import { getProfilePictureUrl } from "../../utils/constants";
 
 const { Text } = Typography;
 
@@ -115,7 +116,7 @@ const Followers: React.FC<FollowersProps> = ({ userId }) => {
             <List.Item>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
                 <Avatar
-                  src={item.profilePicture ? `http://localhost:8080/yapping${item.profilePicture}` : undefined}
+                  src={getProfilePictureUrl(item.profilePicture)}
                   size={32}
                 >
                   {!item.profilePicture && item.fullName.charAt(0)}

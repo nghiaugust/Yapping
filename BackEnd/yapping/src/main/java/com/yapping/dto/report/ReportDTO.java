@@ -23,4 +23,10 @@ public class ReportDTO {
     private Report.Status status; // Trạng thái xử lý báo cáo
     private Instant createdAt; // Thời gian tạo
     private Instant updatedAt; // Thời gian cập nhật
+    
+    // Thông tin chi tiết về đối tượng bị báo cáo
+    private String targetContent; // Nội dung của bài đăng/bình luận bị báo cáo
+    private Long targetAuthorId; // ID tác giả của nội dung bị báo cáo
+    private String targetAuthorUsername; // Tên tác giả của nội dung bị báo cáo
+    private String adminNotes; // Ghi chú của admin khi xử lý
 }

@@ -498,7 +498,6 @@ const EditAccountModal: React.FC<EditAccountModalProps> = ({
       {/* Change Password Modal */}
       <ChangePasswordModal
         visible={isChangePasswordModalVisible}
-        userId={account?.id ?? null}
         username={account?.username ?? ""}
         onClose={handleCloseChangePasswordModal}
       />

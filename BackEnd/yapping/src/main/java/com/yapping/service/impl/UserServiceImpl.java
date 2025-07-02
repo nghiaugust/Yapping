@@ -160,10 +160,6 @@ public class UserServiceImpl implements UserService {
             user.setEmail(patchUserDTO.getEmail());
         }
 
-        // Cập nhật password nếu được cung cấp
-        if (patchUserDTO.getPassword() != null && !patchUserDTO.getPassword().isEmpty()) {
-            user.setPasswordHash(passwordEncoder.encode(patchUserDTO.getPassword()));
-        }
 
         // Cập nhật các thuộc tính khác nếu được cung cấp
         if (patchUserDTO.getFullName() != null) {
@@ -336,12 +332,22 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
         
+        // Kiểm tra mật khẩu hiện tại
+        if (!passwordEncoder.matches(changePasswordDTO.getCurrentPassword(), user.getPasswordHash())) {
+            throw new RuntimeException("Mật khẩu hiện tại không đúng");
+        }
+        
+        // Kiểm tra mật khẩu mới không được giống mật khẩu cũ
+        if (passwordEncoder.matches(changePasswordDTO.getNewPassword(), user.getPasswordHash())) {
+            throw new RuntimeException("Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+        
         // Mã hóa mật khẩu mới
         String encodedPassword = passwordEncoder.encode(changePasswordDTO.getNewPassword());
         
         // Cập nhật mật khẩu
         user.setPasswordHash(encodedPassword);
-        
+
         // Lưu user
         userRepository.save(user);
     }

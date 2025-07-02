@@ -26,6 +26,7 @@ interface UpdateUserData {
 }
 
 interface ChangePasswordData {
+  currentPassword: string;
   newPassword: string;
 }
 
@@ -59,6 +60,6 @@ export const deleteUser = async (id: number): Promise<void> => {
 };
 
 // Đổi mật khẩu
-export const changePassword = async (id: number, data: ChangePasswordData): Promise<void> => {
-  await api.post(`/users/${id}/change-password`, data);
+export const changePassword = async (data: ChangePasswordData): Promise<void> => {
+  await api.post(`/users/change-password`, data);
 };

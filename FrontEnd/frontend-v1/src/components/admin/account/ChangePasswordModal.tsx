@@ -6,19 +6,18 @@ import { changePassword } from "../../../service/admin/userService";
 
 interface ChangePasswordModalProps {
   visible: boolean;
-  userId: number | null;
   username: string;
   onClose: () => void;
 }
 
 interface FormValues {
+  currentPassword: string;
   newPassword: string;
   confirmPassword: string;
 }
 
 const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   visible,
-  userId,
   username,
   onClose,
 }) => {
@@ -26,17 +25,24 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (values: FormValues) => {
-    if (!userId) return;
-    
     setLoading(true);
     try {
-      await changePassword(userId, { newPassword: values.newPassword });
+      await changePassword({ 
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword 
+      });
       message.success("Đổi mật khẩu thành công!");
       form.resetFields();
       onClose();
     } catch (error: unknown) {
       console.error('Error changing password:', error);
-      message.error("Đổi mật khẩu thất bại!");
+      // Hiển thị error message chi tiết từ backend
+      if (error && typeof error === 'object' && 'response' in error) {
+        const apiError = error as { response: { data: { message: string } } };
+        message.error(apiError.response?.data?.message || "Đổi mật khẩu thất bại!");
+      } else {
+        message.error("Đổi mật khẩu thất bại!");
+      }
     } finally {
       setLoading(false);
     }
@@ -162,9 +168,29 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                   fontSize: "14px",
                   fontWeight: "500"
                 }}>
-                  ⚠️ Lưu ý: Hành động này sẽ thay đổi mật khẩu của tài khoản và không thể hoàn tác.
+                  ⚠️ Lưu ý: Bạn cần nhập mật khẩu hiện tại để xác thực trước khi đổi mật khẩu mới.
                 </p>
               </div>
+
+              <Form.Item
+                name="currentPassword"
+                label={<span style={{ color: "#374151", fontSize: "14px", fontWeight: "600" }}>Mật khẩu hiện tại</span>}
+                rules={[
+                  { required: true, message: "Vui lòng nhập mật khẩu hiện tại!" }
+                ]}
+                style={{ marginBottom: "16px" }}
+              >
+                <Input.Password 
+                  placeholder="Nhập mật khẩu hiện tại"
+                  prefix={<LockOutlined style={{ color: "#9ca3af" }} />}
+                  style={{
+                    borderRadius: "8px",
+                    border: "1px solid #d1d5db",
+                    padding: "10px 12px",
+                    fontSize: "14px"
+                  }}
+                />
+              </Form.Item>
 
               <Form.Item
                 name="newPassword"

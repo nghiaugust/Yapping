@@ -219,12 +219,15 @@ public class UserController {
     }
 
     // Đổi mật khẩu
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{id}/change-password")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PostMapping("/change-password")
     public ResponseEntity<ApiResponse> changePassword(
-            @PathVariable Long id, 
             @Valid @RequestBody ChangePasswordDTO changePasswordDTO) {
-        userService.changePassword(id, changePasswordDTO);
+        // Lấy userId từ authentication
+        Map<String, Object> details = (Map<String, Object>) SecurityContextHolder.getContext().getAuthentication().getDetails();
+        Map<String, Object> claims = (Map<String, Object>) details.get("claims");
+        Long userId = (Long) claims.get("userId");
+        userService.changePassword(userId, changePasswordDTO);
         ApiResponse response = new ApiResponse(
                 HttpStatus.OK.value(),
                 true,

@@ -62,8 +62,8 @@ public class FollowServiceImpl implements FollowService {
         // Tạo thông báo cho người được follow
         // notificationService.createFollowNotification(followerId, followedId);
         CreateNotificationDTO createNotificationDTO = new CreateNotificationDTO();
-        createNotificationDTO.setUserId(follower.getId());
-        createNotificationDTO.setActorId(followed.getId());
+        createNotificationDTO.setUserId(followed.getId());
+        createNotificationDTO.setActorId(follower.getId());
         createNotificationDTO.setType(Notification.Type.FOLLOW);
         createNotificationDTO.setTargetType(Notification.TargetType.USER);
         createNotificationDTO.setTargetId(follower.getId()); // targetId là ID của người follow

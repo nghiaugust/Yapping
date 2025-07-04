@@ -5,6 +5,8 @@ import { FileTextOutlined, MessageOutlined, UserOutlined, ClockCircleOutlined } 
 import { getReportById, updateReportStatus } from '../../../service/admin/reportService';
 import { ReportWithDetails, UpdateReportRequest } from '../../../types/report';
 import moment from 'moment';
+import ReportActionModal from './ReportActionModal';
+import { Fragment } from 'react';
 
 interface ReportDetailModalProps {
   visible: boolean;
@@ -22,6 +24,7 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [report, setReport] = useState<ReportWithDetails | null>(null);
+  const [actionModalVisible, setActionModalVisible] = useState(false);
 
   const fetchReportDetails = useCallback(async () => {
     if (!reportId) return;
@@ -74,6 +77,20 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
     }
   };
 
+  const handleOpenActionModal = () => {
+    setActionModalVisible(true);
+  };
+
+  const handleCloseActionModal = () => {
+    setActionModalVisible(false);
+  };
+
+  const handleActionCompleted = () => {
+    setActionModalVisible(false); // Đóng action modal
+    onReportUpdated();
+    onCancel();
+  };
+
   const getReasonLabel = (reason: string): string => {
     const reasonMap: Record<string, string> = {
       SPAM: 'Spam/Quảng cáo',
@@ -121,7 +138,7 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
               type="primary"
               style={{ background: '#52c41a', borderColor: '#52c41a' }}
               loading={updating}
-              onClick={() => void handleUpdateStatus('RESOLVED_ACTION_TAKEN', 'Báo cáo hợp lệ, đã xử lý vi phạm')}
+              onClick={handleOpenActionModal}
             >
               Chấp nhận & Xử lý
             </Button>
@@ -152,34 +169,35 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
   };
 
   return (
-    <Modal
-      title={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            background: 'linear-gradient(135deg, #ff7875, #ffa940)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff'
-          }}>
-            <FileTextOutlined />
+    <Fragment>
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #ff7875, #ffa940)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff'
+            }}>
+              <FileTextOutlined />
+            </div>
+            <span style={{ fontSize: '16px', fontWeight: '600' }}>
+              Chi tiết báo cáo #{reportId}
+            </span>
           </div>
-          <span style={{ fontSize: '16px', fontWeight: '600' }}>
-            Chi tiết báo cáo #{reportId}
-          </span>
-        </div>
-      }
-      visible={visible}
-      onCancel={onCancel}
-      footer={renderActionButtons()}
-      width={800}
-      loading={loading}
-      style={{ top: 20 }}
-      className="reports-detail-modal"
-    >
+        }
+        open={visible}
+        onCancel={onCancel}
+        footer={renderActionButtons()}
+        width={800}
+        loading={loading}
+        style={{ top: 20 }}
+        className="reports-detail-modal"
+      >
       {report && (
         <div>
           <Descriptions
@@ -347,7 +365,18 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
           </div>
         </div>
       )}
-    </Modal>
+      </Modal>
+
+      {/* Report Action Modal - Đặt ngoài ReportDetailModal để tránh conflict */}
+      {actionModalVisible && (
+        <ReportActionModal
+          visible={actionModalVisible}
+          onCancel={handleCloseActionModal}
+          report={report}
+          onActionCompleted={handleActionCompleted}
+        />
+      )}
+    </Fragment>
   );
 };
 

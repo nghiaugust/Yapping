@@ -215,6 +215,26 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
+    public void deleteCommentByAdmin(Long commentId) {
+        // Kiểm tra comment tồn tại
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bình luận với ID: " + commentId));
+        
+        // Lấy post để cập nhật comment_count
+        Post post = comment.getPost();
+        
+        // Xóa comment (các comment con sẽ bị xóa tự động do @OnDelete(action = OnDeleteAction.CASCADE))
+        commentRepository.delete(comment);
+        
+        // Giảm comment_count của post
+        long childCommentCount = commentRepository.countByParentCommentId(commentId);
+        int totalComments = 1 + (int) childCommentCount; // comment chính + các comment con
+        post.setCommentCount(post.getCommentCount() == null ? 0 : Math.max(0, post.getCommentCount() - totalComments));
+        postRepository.save(post);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public CommentDTO getCommentById(Long commentId) {
         Comment comment = commentRepository.findById(commentId)

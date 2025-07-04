@@ -18,6 +18,9 @@ public interface CommentService {
     // Xóa bình luận
     void deleteComment(Long commentId, Long userId);
     
+    // Xóa bình luận (Admin only - không cần kiểm tra quyền sở hữu)
+    void deleteCommentByAdmin(Long commentId);
+    
     // Lấy bình luận theo ID
     CommentDTO getCommentById(Long commentId);
     
